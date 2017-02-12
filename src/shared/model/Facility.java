@@ -1,0 +1,36 @@
+package shared.model;
+
+public class Facility implements DataModel, Marshallable {
+	
+	private int id;
+	private String name;
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public byte[] toByteArray() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Marshallable fromByteArray() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}
