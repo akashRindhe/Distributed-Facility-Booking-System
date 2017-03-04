@@ -1,6 +1,6 @@
 package shared.model;
 
-public class Facility implements DataModel, Marshallable {
+public class Facility implements DataModel {
 	
 	private int id;
 	private String name;
@@ -19,18 +19,6 @@ public class Facility implements DataModel, Marshallable {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	@Override
-	public byte[] toByteArray() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Marshallable fromByteArray() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

@@ -2,7 +2,7 @@ package shared.model;
 
 import java.util.Date;
 
-public class CallbackInfo implements DataModel, Marshallable {
+public class CallbackInfo implements DataModel {
 	
 	private int id;
 	private String address;
@@ -57,18 +57,6 @@ public class CallbackInfo implements DataModel, Marshallable {
 
 	public void setIntervalEnd(Date intervalEnd) {
 		this.intervalEnd = intervalEnd;
-	}
-
-	@Override
-	public byte[] toByteArray() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Marshallable fromByteArray() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

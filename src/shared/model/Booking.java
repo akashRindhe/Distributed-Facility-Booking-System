@@ -2,7 +2,7 @@ package shared.model;
 
 import java.util.Date;
 
-public class Booking implements DataModel, Marshallable {
+public class Booking implements DataModel {
 	
 	private int id;
 	private int facilityId;
@@ -48,18 +48,6 @@ public class Booking implements DataModel, Marshallable {
 
 	public void setBookingEnd(Date bookingEnd) {
 		this.bookingEnd = bookingEnd;
-	}
-
-	@Override
-	public byte[] toByteArray() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Marshallable fromByteArray() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }
