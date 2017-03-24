@@ -2,15 +2,23 @@ package shared.model;
 
 public class User implements DataModel{
 	
-	private int id;
-	private String email;
-
-	public String getEmail() {
-		return email;
+	private String id;
+	private String userName;
+	
+	public String getId() {
+		return id;
 	}
 
-	public void setEmail(String email) {
-		this.email = email;
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 
 }
