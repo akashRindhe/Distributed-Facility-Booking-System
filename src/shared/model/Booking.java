@@ -1,12 +1,17 @@
 package shared.model;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Date;
+import shared.services.DatabaseConnection;
 
 public class Booking implements DataModel {
 	
 	private int id;
 	private int facilityId;
-	private int userId;
+	private String userId;
 	private Date bookingStart;
 	private Date bookingEnd;
 
@@ -26,11 +31,11 @@ public class Booking implements DataModel {
 		this.facilityId = facilityId;
 	}
 
-	public int getUserId() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setUserId(int userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
@@ -49,5 +54,29 @@ public class Booking implements DataModel {
 	public void setBookingEnd(Date bookingEnd) {
 		this.bookingEnd = bookingEnd;
 	}
-
+	public static Booking fetchBooking(int id)
+	{
+		Booking booking = new Booking();
+		try {
+			Connection connection = DatabaseConnection.connectToDB();
+			Statement stmt = connection.createStatement();
+			String sql = "SELECT * FROM Booking WHERE id = " + id;
+			ResultSet rs = stmt.executeQuery(sql);
+			while (rs.next())
+			{
+				booking.id = rs.getInt("id");
+				booking.facilityId = rs.getInt("facilityId");
+				booking.userId = rs.getString("userId");
+				booking.bookingStart = rs.getTimestamp("bookingStart");
+				booking.bookingEnd = rs.getTimestamp("bookingEnd");
+			}
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			System.out.println("SQL Driver not found");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Connection Error");
+		}
+		return booking;
+	}
 }
