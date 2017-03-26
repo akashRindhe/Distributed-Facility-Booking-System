@@ -1,22 +1,14 @@
 package shared.model;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import shared.services.DatabaseConnection;
+import java.sql.Timestamp;
 
 public class Booking implements DataModel {
 	
 	private int id;
 	private int facilityId;
 	private String userId;
-	private Date bookingStart;
-	private Date bookingEnd;
+	private Timestamp bookingStart;
+	private Timestamp bookingEnd;
 
 	public int getId() {
 		return id;
@@ -42,100 +34,19 @@ public class Booking implements DataModel {
 		this.userId = userId;
 	}
 
-	public Date getBookingStart() {
+	public Timestamp getBookingStart() {
 		return bookingStart;
 	}
 
-	public void setBookingStart(Date bookingStart) {
+	public void setBookingStart(Timestamp bookingStart) {
 		this.bookingStart = bookingStart;
 	}
 
-	public Date getBookingEnd() {
+	public Timestamp getBookingEnd() {
 		return bookingEnd;
 	}
 
-	public void setBookingEnd(Date bookingEnd) {
+	public void setBookingEnd(Timestamp bookingEnd) {
 		this.bookingEnd = bookingEnd;
-	}
-	public static Booking fetchBookingInfo(int id)
-	{
-		Booking booking = new Booking();
-		try {
-			Connection connection = DatabaseConnection.connectToDB();
-			Statement stmt = connection.createStatement();
-			String sql = "SELECT * FROM Booking WHERE id = " + id;
-			ResultSet rs = stmt.executeQuery(sql);
-			while (rs.next())
-			{
-				booking.id = rs.getInt("id");
-				booking.facilityId = rs.getInt("facilityId");
-				booking.userId = rs.getString("userId");
-				booking.bookingStart = rs.getTimestamp("bookingStart");
-				booking.bookingEnd = rs.getTimestamp("bookingEnd");
-			}
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			System.out.println("SQL Driver not found");
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Connection Error");
-		}
-		return booking;
-	}
-	
-	public static List<Booking> fetchBookingsByUser(String id)
-	{
-		List<Booking> bookings = new ArrayList<Booking>();
-		try {
-			Connection connection = DatabaseConnection.connectToDB();
-			Statement stmt = connection.createStatement();
-			String sql = "SELECT * FROM Booking WHERE userId = '" + id + "'";
-			ResultSet rs = stmt.executeQuery(sql);
-			while (rs.next())
-			{
-				Booking booking = new Booking();
-				booking.id = rs.getInt("id");
-				booking.facilityId = rs.getInt("facilityId");
-				booking.userId = rs.getString("userId");
-				booking.bookingStart = rs.getTimestamp("bookingStart");
-				booking.bookingEnd = rs.getTimestamp("bookingEnd");
-				bookings.add(booking);
-			}
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			System.out.println("SQL Driver not found");
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Connection Error");
-		}
-		return bookings;
-	}
-	
-	public static List<Booking> fetchBookingsByFacility(int id)
-	{
-		List<Booking> bookings = new ArrayList<Booking>();
-		try {
-			Connection connection = DatabaseConnection.connectToDB();
-			Statement stmt = connection.createStatement();
-			String sql = "SELECT * FROM Booking WHERE facilityId = " + id;
-			ResultSet rs = stmt.executeQuery(sql);
-			while (rs.next())
-			{
-				Booking booking = new Booking();
-				booking.id = rs.getInt("id");
-				booking.facilityId = rs.getInt("facilityId");
-				booking.userId = rs.getString("userId");
-				booking.bookingStart = rs.getTimestamp("bookingStart");
-				booking.bookingEnd = rs.getTimestamp("bookingEnd");
-				bookings.add(booking);
-			}
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			System.out.println("SQL Driver not found");
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Connection Error");
-		}
-		return bookings;
 	}
 }

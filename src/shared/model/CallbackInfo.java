@@ -1,6 +1,6 @@
 package shared.model;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 public class CallbackInfo implements DataModel {
 	
@@ -8,8 +8,8 @@ public class CallbackInfo implements DataModel {
 	private String address;
 	private int portNumber;
 	private int facilityId;
-	private Date intervalStart;
-	private Date intervalEnd;
+	private Timestamp intervalStart;
+	private Timestamp intervalEnd;
 
 	public int getId() {
 		return id;
@@ -43,19 +43,19 @@ public class CallbackInfo implements DataModel {
 		this.facilityId = facilityId;
 	}
 
-	public Date getIntervalStart() {
+	public Timestamp getIntervalStart() {
 		return intervalStart;
 	}
 
-	public void setIntervalStart(Date intervalStart) {
+	public void setIntervalStart(Timestamp intervalStart) {
 		this.intervalStart = intervalStart;
 	}
 
-	public Date getIntervalEnd() {
+	public Timestamp getIntervalEnd() {
 		return intervalEnd;
 	}
 
-	public void setIntervalEnd(Date intervalEnd) {
+	public void setIntervalEnd(Timestamp intervalEnd) {
 		this.intervalEnd = intervalEnd;
 	}
 
