@@ -1,13 +1,12 @@
-package server.services;
+package server;
 
 import java.sql.*;
 import java.sql.Date;
-
 import shared.model.*;
 import java.util.*;
 
 
-public class DatabaseAccess {
+class DatabaseAccess {
 	
 	private static Connection connectToDB() throws ClassNotFoundException, SQLException{
 		String driverName = "com.mysql.jdbc.Driver";
