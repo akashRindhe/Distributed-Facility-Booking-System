@@ -36,12 +36,16 @@ public class MarshallingService {
 			if (field.getType().isAssignableFrom(Integer.TYPE)) {
 				size += 4;
 			} else if (field.getType().isAssignableFrom(String.class)) {
+				field.setAccessible(true);
 				size += 4 + field.get(obj).toString().length();
 			} else if (Marshallable.class.isAssignableFrom(field.getType())) {
+				field.setAccessible(true);
+				size += 4 + field.get(obj).getClass().getCanonicalName().length();
 				size += getSize((Marshallable) field.get(obj));
 			} else if (List.class.isAssignableFrom(field.getType())
 					&& Marshallable.class.isAssignableFrom(getListGenericType(field.getGenericType()))) {
 				size += 4;
+				field.setAccessible(true);
 				List<?> list = (List<?>) field.get(obj);
 				for (Object item : list) {
 					size += getSize((Marshallable) item);
@@ -55,7 +59,6 @@ public class MarshallingService {
 			throws IllegalArgumentException, IllegalAccessException {
 		ByteBuffer buffer = ByteBuffer.allocate(getSize(obj));
 		Field[] fields = getSortedFields(obj);
-    	
     	for (Field field : fields) {
     		field.setAccessible(true);
 			if (field.getType().isAssignableFrom(Integer.TYPE)) {
@@ -65,6 +68,8 @@ public class MarshallingService {
 				buffer.putInt(temp.length());
 				buffer.put(temp.getBytes());
 			} else if (Marshallable.class.isAssignableFrom(field.getType())) {
+				buffer.putInt(field.get(obj).getClass().getCanonicalName().length());
+		    	buffer.put(field.get(obj).getClass().getCanonicalName().getBytes());
 				buffer.put(marshal((Marshallable) field.get(obj)));
 			} else if (List.class.isAssignableFrom(field.getType())
 					&& Marshallable.class.isAssignableFrom(getListGenericType(field.getGenericType()))) {
@@ -79,14 +84,14 @@ public class MarshallingService {
 	}
 	
 	public <T extends Marshallable> T unmarshal(byte[] arr, Class<T> type) 
-			throws InstantiationException, IllegalAccessException {
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		ByteBuffer buffer = ByteBuffer.wrap(arr);
 		return unmarshal(buffer, type);
 	}
 	
 	@SuppressWarnings("unchecked")
 	private <T extends Marshallable> T unmarshal(ByteBuffer buffer, Class<T> type) 
-			throws InstantiationException, IllegalAccessException {
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		T data = type.newInstance();
 		Field[] fields = getSortedFields(data);
 		for (Field field : fields) {
@@ -100,7 +105,11 @@ public class MarshallingService {
 				buffer.get(temp, 0, len);
 				field.set(data, new String(temp));
 			} else if (Marshallable.class.isAssignableFrom(field.getType())) {
-				field.set(data, unmarshal(buffer, (Class<? extends Marshallable>)field.getType()));
+				int len = buffer.getInt();
+				byte[] temp = new byte[len];
+				buffer.get(temp, 0, len);
+				Class<T> marshClass = (Class<T>) Class.forName(new String(temp));
+				field.set(data, unmarshal(buffer,marshClass));
 			} else if (List.class.isAssignableFrom(field.getType())
 					&& Marshallable.class.isAssignableFrom(getListGenericType(field.getGenericType()))) {
 				int len = buffer.getInt();
