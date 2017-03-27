@@ -2,6 +2,6 @@ package shared.webservice;
 
 import shared.Marshallable;
 
-public class ChangeFacilityResponse implements Marshallable {
+public class ChangeBookingResponse implements Marshallable {
 
 }
