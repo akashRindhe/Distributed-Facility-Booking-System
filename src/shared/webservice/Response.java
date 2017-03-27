@@ -5,7 +5,6 @@ import shared.Marshallable;
 public class Response implements Marshallable {
 	private int type;
 	private int isError;
-	private String errorString;
 	private Marshallable data;
 	
 	public int getType() {
@@ -22,14 +21,6 @@ public class Response implements Marshallable {
 	
 	public void setIsError(int isError) {
 		this.isError = isError;
-	}
-	
-	public String getErrorString() {
-		return errorString;
-	}
-	
-	public void setErrorString(String errorString) {
-		this.errorString = errorString;
 	}
 	
 	public Marshallable getData() {
