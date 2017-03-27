@@ -58,7 +58,6 @@ public class Server {
 				response = controller.processRequest(request);
 				sendResponse(response, packet.getAddress(), packet.getPort());
 			} catch (IllegalArgumentException | IllegalAccessException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				response = new Response("An unknown error has occurred");
 				sendResponse(response, packet.getAddress(), packet.getPort());
