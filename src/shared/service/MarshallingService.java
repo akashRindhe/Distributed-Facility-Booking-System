@@ -6,7 +6,6 @@ import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 
 import shared.Marshallable;
