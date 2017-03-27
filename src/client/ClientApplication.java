@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import joptsimple.OptionParser;
+
 public class ClientApplication {
 	public static OptionParser getParser() {
 		OptionParser optParser = new OptionParser();
@@ -13,6 +14,7 @@ public class ClientApplication {
 		optParser.accepts("userId").withRequiredArg().required().ofType(String.class);
 		return optParser;
 	}
+	
 	public static void main(String[] args) throws Exception {
 		OptionParser optParser = ClientApplication.getParser();
 		try{
@@ -39,7 +41,7 @@ public class ClientApplication {
 			
 			switch (choice) 
 			{
-			case 1: System.out.print("Enter facility ID: ");
+			case 1: System.out.print("Enter facility name: ");
 					facilityId = sc.next();
 					System.out.print("Enter number of days: ");
 					int length = sc.nextInt();
@@ -51,7 +53,7 @@ public class ClientApplication {
 					//Generate QueryFacility request object
 					System.out.println("Querying for facility " + facilityId);
 					break;
-			case 2: System.out.print("Enter facility ID: ");
+			case 2: System.out.print("Enter facility name: ");
 					facilityId = sc.next();
 					System.out.print("Enter booking day: ");
 					String day = sc.next();
@@ -69,12 +71,16 @@ public class ClientApplication {
 					//Generate ChangeFacility request object
 					System.out.println("Changin booking " + bookingId + " by " + offset + " minutes");
 					break;
-			case 4: System.out.print("Enter facility ID: ");
+			case 4: System.out.print("Enter facility name: ");
 					facilityId = sc.next();
-					System.out.print("Enter offset for change (in minutes): ");
-					int interval = sc.nextInt();
+					System.out.print("Enter day to monitor: ");
+					String monitorDay = sc.next();
+					System.out.print("Enter start time for monitoring: ");
+					String monitorsSartTime = sc.next();
+					System.out.print("Enter end time for monitoring: ");
+					String monitorEndTime = sc.next();
 					//Generate MonitorFacility request object
-					System.out.println("Monitoring facility " + facilityId + " for " + interval + " days");
+					//System.out.println("Monitoring facility " + facilityId + " for " + interval + " days");
 					break;
 			case 5: System.out.println("Call an idempotent service");
 					break;
