@@ -5,15 +5,23 @@ import java.util.List;
 import java.util.Scanner;
 
 import joptsimple.OptionParser;
-import joptsimple.OptionSet;
-import joptsimple.util.DateConverter;
 public class ClientApplication {
-	public void acceptsArguments() {
-		
-		
+	public static OptionParser getParser() {
+		OptionParser optParser = new OptionParser();
+		optParser.accepts("ip").withRequiredArg().required().ofType(String.class);
+		optParser.accepts("port").withRequiredArg().required().ofType(Integer.class);
+		optParser.accepts("userId").withRequiredArg().required().ofType(String.class);
+		return optParser;
 	}
 	public static void main(String[] args) throws Exception {
-		//System.out.println("");
+		OptionParser optParser = ClientApplication.getParser();
+		try{
+			optParser.parse(args);
+		}
+		catch (Exception e){
+			 System.err.println("Caught Exception: " + e.getMessage());
+			 System.exit(-1);
+		}
 		Scanner sc = new Scanner(System.in);
 		int choice;
 		do {
@@ -27,9 +35,12 @@ public class ClientApplication {
 			System.out.println("7. Quit");
 			System.out.print("Enter an option: ");
 			choice = sc.nextInt();
-			switch (choice) {
+			String facilityId;
+			
+			switch (choice) 
+			{
 			case 1: System.out.print("Enter facility ID: ");
-					String facilityId = sc.next();
+					facilityId = sc.next();
 					System.out.print("Enter number of days: ");
 					int length = sc.nextInt();
 					List<String> listDays = new ArrayList<String>(length); 
@@ -37,23 +48,42 @@ public class ClientApplication {
 						System.out.print("Enter day "+ (i+1) + ": ");
 						listDays.add(sc.next());
 					}
-					System.out.println("Querying for facility");
+					//Generate QueryFacility request object
+					System.out.println("Querying for facility " + facilityId);
 					break;
-			case 2: System.out.println("Book Facility");
+			case 2: System.out.print("Enter facility ID: ");
+					facilityId = sc.next();
+					System.out.print("Enter booking day: ");
+					String day = sc.next();
+					System.out.print("Enter start time for booking: ");
+					String startTime = sc.next();
+					System.out.print("Enter end time for booking: ");
+					String endTime = sc.next();
+					//Generate BookFacility request object
+					System.out.println("Booking facility " + facilityId + " on " + day + " from " + startTime + " to " + endTime);
 					break;
-			case 3: System.out.println("Change Booking");
+			case 3: System.out.print("Enter booking ID: ");
+					String bookingId = sc.next();
+					System.out.print("Enter offset for change (in minutes): ");
+					int offset = sc.nextInt();
+					//Generate ChangeFacility request object
+					System.out.println("Changin booking " + bookingId + " by " + offset + " minutes");
 					break;
-			case 4: System.out.println("Monitor Facility");
+			case 4: System.out.print("Enter facility ID: ");
+					facilityId = sc.next();
+					System.out.print("Enter offset for change (in minutes): ");
+					int interval = sc.nextInt();
+					//Generate MonitorFacility request object
+					System.out.println("Monitoring facility " + facilityId + " for " + interval + " days");
 					break;
 			case 5: System.out.println("Call an idempotent service");
 					break;
 			case 6: System.out.println("Call an non-idempotent service");
 					break;
 			default:System.out.println("Exiting...");
-			
 			}
-			
 		} while (choice <7 && choice > 0);
+		System.exit(0);
 		
 		/*
 		OptionParser optParserPrimary = new OptionParser();
