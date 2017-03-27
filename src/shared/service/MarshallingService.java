@@ -1,4 +1,4 @@
-package shared.services;
+package shared.service;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
