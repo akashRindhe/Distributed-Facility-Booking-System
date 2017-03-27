@@ -1,8 +1,9 @@
 package shared.model;
 
 import java.sql.Timestamp;
+import shared.Marshallable;
 
-public class Booking implements DataModel {
+public class Booking implements Marshallable {
 	
 	private int id;
 	private int facilityId;

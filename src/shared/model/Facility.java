@@ -1,6 +1,8 @@
 package shared.model;
 
-public class Facility implements DataModel {
+import shared.Marshallable;
+
+public class Facility implements Marshallable {
 	
 	private int id;
 	private String name;

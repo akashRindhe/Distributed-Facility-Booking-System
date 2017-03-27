@@ -1,6 +1,8 @@
 package shared.model;
 
-public class User implements DataModel{
+import shared.Marshallable;
+
+public class User implements Marshallable{
 	
 	private String id;
 	private String userName;

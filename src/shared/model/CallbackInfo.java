@@ -1,8 +1,10 @@
 package shared.model;
 
 import java.sql.Timestamp;
+import shared.Marshallable;
 
-public class CallbackInfo implements DataModel {
+
+public class CallbackInfo implements Marshallable {
 	
 	private int id;
 	private String address;
