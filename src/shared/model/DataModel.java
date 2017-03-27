@@ -1,5 +1,7 @@
 package shared.model;
 
-public interface DataModel {
+import shared.Marshallable;
+
+public interface DataModel extends Marshallable {
 	
 }
