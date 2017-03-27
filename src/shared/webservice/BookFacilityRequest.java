@@ -1,20 +1,20 @@
 package shared.webservice;
 
-import java.security.Timestamp;
+import java.sql.Timestamp;
 
 import shared.Marshallable;
 
 public class BookFacilityRequest implements Marshallable {
 	private String facilityName;
-	private Timestamp startTime;
-	private Timestamp endTime;
+	private Timestamp startTimeStamp;
+	private Timestamp endTimeStamp;
 	
-	public Timestamp getEndTime() {
-		return endTime;
+	public Timestamp getEndTimeStamp() {
+		return endTimeStamp;
 	}
 
-	public void setEndTime(Timestamp endTime) {
-		this.endTime = endTime;
+	public void setEndTimeStamp(Timestamp endTime) {
+		this.endTimeStamp = endTime;
 	}
 
 	public String getFacilityName() {
@@ -25,11 +25,11 @@ public class BookFacilityRequest implements Marshallable {
 		this.facilityName = facilityName;
 	}
 	
-	public Timestamp getStartTime() {
-		return startTime;
+	public Timestamp getStartTimeStamp() {
+		return startTimeStamp;
 	}
 	
-	public void setStartTime(Timestamp startTime) {
-		this.startTime = startTime;
+	public void setStartTimeStamp(Timestamp startTime) {
+		this.startTimeStamp = startTime;
 	}
 }

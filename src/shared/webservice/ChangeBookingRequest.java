@@ -2,7 +2,7 @@ package shared.webservice;
 
 import shared.Marshallable;
 
-public class ChangeFacilityRequest implements Marshallable {
+public class ChangeBookingRequest implements Marshallable {
 	private int confirmationId;
 	private int offset;
 	
