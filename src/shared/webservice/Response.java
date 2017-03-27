@@ -3,16 +3,19 @@ package shared.webservice;
 import shared.Marshallable;
 
 public class Response implements Marshallable {
-	private int type;
 	private int isError;
 	private Marshallable data;
 	
-	public int getType() {
-		return type;
+	public Response(Marshallable data) {
+		this.data = data;
+		this.isError = 0;
 	}
 	
-	public void setType(int type) {
-		this.type = type;
+	public Response(String errorMessage) {
+		ErrorData errorData = new ErrorData();
+		errorData.setErrorType(errorMessage);
+		this.isError = 1;
+		this.data = errorData;
 	}
 	
 	public int getIsError() {
