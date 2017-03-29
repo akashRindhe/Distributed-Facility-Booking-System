@@ -28,8 +28,10 @@ public class Server {
 		byte[] buf = new byte[1024];
 		DatagramPacket packet = new DatagramPacket(buf, buf.length);
 		
+		System.out.println("Server started on port " + port);
 		while (true) {
 			try {
+				System.out.println("Waiting to receive packet");
 				socket.receive(packet);
 				Request request =
 						MarshallingService
@@ -52,6 +54,7 @@ public class Server {
 	
 	private void processRequest(Request request, DatagramPacket packet) 
 			throws IOException, IllegalArgumentException, IllegalAccessException {
+		System.out.println("Processing request of type: " + request.getRequestType());
 		if (filterService.performFiltering(request)) {
 			Response response;
 			try {
@@ -72,6 +75,7 @@ public class Server {
 		DatagramPacket packet = 
 				new DatagramPacket(buf, buf.length, address, port);
 		socket.send(packet);
+		System.out.println("Response sent");
 	}
 
 }
