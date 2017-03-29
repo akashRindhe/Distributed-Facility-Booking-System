@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -50,6 +51,25 @@ public class MarshallingService {
 				for (Object item : list) {
 					size += getSize((Marshallable) item);
 				}
+			} else if (List.class.isAssignableFrom(field.getType())
+					&& getListGenericType(field.getGenericType()).isAssignableFrom(Timestamp.class)){
+				size += 4;
+				field.setAccessible(true);
+				@SuppressWarnings("unchecked")
+				List<Timestamp> list = (List<Timestamp>) field.get(obj);
+				for (Timestamp item : list){
+					size += 4 + item.toString().length();
+				}
+			} else if (List.class.isAssignableFrom(field.getType())
+					&& getListGenericType(field.getGenericType()).isAssignableFrom(Integer.TYPE)){
+				size += 4;
+				field.setAccessible(true);
+				@SuppressWarnings("unchecked")
+				List<Integer> list = (List<Integer>)field.get(obj);
+				size += 4*list.size();
+			} else if (field.getType().isAssignableFrom(Timestamp.class)){
+				field.setAccessible(true);
+				size += 4 + field.get(obj).toString().length();
 			}
 		}
 		return size;
@@ -78,6 +98,26 @@ public class MarshallingService {
 				for (Object item : list) {
 					buffer.put(marshal((Marshallable) item));
 				}
+			}else if (List.class.isAssignableFrom(field.getType())
+					&& getListGenericType(field.getGenericType()).isAssignableFrom(Timestamp.class)){
+				@SuppressWarnings("unchecked")
+				List<Timestamp> list = (List<Timestamp>) field.get(obj);
+				buffer.putInt(list.size());
+				for (Timestamp item : list){
+					buffer.putInt(item.toString().length());
+					buffer.put(item.toString().getBytes());
+				}
+			} else if (List.class.isAssignableFrom(field.getType())
+					&& getListGenericType(field.getGenericType()).isAssignableFrom(Integer.TYPE)){
+				@SuppressWarnings("unchecked")
+				List<Integer> list = (List<Integer>)field.get(obj);
+				buffer.putInt(list.size());
+				for (Integer temp: list){
+					buffer.putInt(temp);
+				}
+			} else if (field.getType().isAssignableFrom(Timestamp.class)){
+				buffer.putInt(field.get(obj).toString().length());
+				buffer.put(field.get(obj).toString().getBytes());
 			}
 		}
 		return buffer.array();
@@ -119,6 +159,36 @@ public class MarshallingService {
 				for (int i = 0; i < len; i++) {
 					list.add(unmarshal(buffer, (Class<? extends Marshallable>)genericType));
 				}
+			}else if (List.class.isAssignableFrom(field.getType())
+					&& getListGenericType(field.getGenericType()).isAssignableFrom(Timestamp.class)){
+				int len = buffer.getInt();
+				@SuppressWarnings("unchecked")
+				List<Timestamp> list = (List<Timestamp>) field.get(data);
+				list.clear();
+				for (int i = 0; i < len; i++){
+					int slen = buffer.getInt();
+					byte[] temp = new byte[slen];
+					buffer.get(temp, 0, slen);
+					String s = new String(temp);
+					Timestamp t = Timestamp.valueOf(s);
+					list.add(t);
+				}
+			} else if (List.class.isAssignableFrom(field.getType())
+					&& getListGenericType(field.getGenericType()).isAssignableFrom(Integer.TYPE)){
+				@SuppressWarnings("unchecked")
+				int len = buffer.getInt();
+				List<Integer> list = (List<Integer>)field.get(data);
+				list.clear();
+				for (int i = 0; i < len; i++){
+					list.add(buffer.getInt());
+				}
+			} else if (field.getType().isAssignableFrom(Timestamp.class)){
+				int len = buffer.getInt();
+				byte[] temp = new byte[len];
+				buffer.get(temp,0,len);
+				String s = new String(temp);
+				Timestamp t = Timestamp.valueOf(s);
+				field.set(data, t);
 			}
 		}
 		return data;
