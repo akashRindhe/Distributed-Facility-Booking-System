@@ -6,6 +6,10 @@ public class Response implements Marshallable {
 	private int isError;
 	private Marshallable data;
 	
+	public Response () {
+		
+	}
+	
 	public Response(Marshallable data) {
 		this.data = data;
 		this.isError = 0;

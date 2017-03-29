@@ -9,10 +9,10 @@ import java.util.List;
 
 public class Controller {
 	
-	public Request generateRequest(Marshallable marshallable) {
+	public Request generateRequest(Marshallable marshallable, int type) {
 		Request request = new Request();
 		request.setRequestId("0001");
-		request.setRequestType(5);
+		request.setRequestType(type);
 		request.setRequestData(marshallable);
 		return request;
 	}

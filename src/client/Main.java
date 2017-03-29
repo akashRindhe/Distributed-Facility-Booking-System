@@ -38,13 +38,12 @@ public class Main {
 			Scanner sc = console.getScanner();
 			Controller controller = new Controller();
 			int choice;
-			System.out.println("Sending getFacilityRequest");
+			System.out.println("Sending Request");
 			GetFacilitiesRequest getFacilityRequest = controller.generateFacilityRequest();
 			
-			Request request = controller.generateRequest(getFacilityRequest);
-			
+			Request request = controller.generateRequest(getFacilityRequest, Type.GET_FACILITIES);
+			Response response = new Response();
 			client.start(request);
-			
 			
 			System.out.println("Processed getFacilityResponse");
 			
@@ -74,14 +73,17 @@ public class Main {
 								String queryDay= sc.next().toUpperCase();
 								//listDays.add(DayOfWeek.valueOf(queryDay).getValue());
 							}
-							
 							QueryFacilityRequest queryRequest = controller.generateQueryRequest(facilityName, listDays);
+							request = controller.generateRequest(queryRequest, Type.QUERY_FACILITY);
+							client.sendRequest(request);
 							
+							client.processResponse(response);
+							
+							System.out.println("Querying for facility " + facilityName);
 							// Send this marshalledRequest via UDP to Server
 							client.sendQueryFacilityRequest(queryRequest);
 							
 							QueryFacilityResponse queryResponse = new QueryFacilityResponse();
-							System.out.println("Querying for facility " + facilityName);
 							
 							// Receive response from Server
 							client.processQueryFacilityResponse(queryResponse);
@@ -207,15 +209,17 @@ public class Main {
 							
 							System.out.println("Start: " + startTimeStamp.toString());
 							System.out.println("End: " + endTimeStamp.toString());
-							
-							//Generate BookFacility request object
 							BookFacilityRequest bookingRequest = controller.generateBookingRequest(userId, facilityId, startTimeStamp, endTimeStamp );
-					
+							request = controller.generateRequest(bookingRequest, Type.BOOK_FACILITY);
+							client.sendRequest(request);
+							
+							client.processResponse(response);
+							
+							System.out.println("Booking facility " + facilityName + " on " + bookingDay + ", " + bookingDate +"/" + bookingMonth + "/" + bookingYear +  " from " + start + " to " + end);
 							// Send this marshalledRequest via UDP to Server
 							client.sendBookFacilityRequest(bookingRequest);
 							
 							BookFacilityResponse bookingResponse = new BookFacilityResponse();
-							System.out.println("Booking facility " + facilityName + " on " + bookingDay + ", " + bookingDate +"/" + bookingMonth + "/" + bookingYear +  " from " + start + " to " + end);
 							
 							// Receive response from Server
 							client.processBookFacilityResponse(bookingResponse);
@@ -227,14 +231,17 @@ public class Main {
 							System.out.print("Enter offset for change (in minutes): ");
 							int offset = sc.nextInt();
 							
-							//Generate BookFacility request object
 							ChangeBookingRequest changeRequest = controller.generateChangeRequest(bookingId, offset);
-					
+							request = controller.generateRequest(changeRequest, Type.BOOK_FACILITY);
+							client.sendRequest(request);
+							
+							client.processResponse(response);
+							
+							System.out.println("Changing booking " + bookingId + " by " + offset + " minutes");
 							// Send this marshalledRequest via UDP to Server
 							client.sendChangeBookingRequest(changeRequest);
 							
 							ChangeBookingResponse changeResponse = new ChangeBookingResponse();
-							System.out.println("Changing booking " + bookingId + " by " + offset + " minutes");
 							
 							// Receive response from Server
 							client.processChangeBookingResponse(changeResponse);

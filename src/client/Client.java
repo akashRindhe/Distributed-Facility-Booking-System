@@ -56,6 +56,11 @@ public class Client {
 		this.socket.close();
 	}
 	
+	public void sendRequest(Request request) throws IllegalArgumentException, IllegalAccessException, IOException {
+		byte[] buf = marshallingService.marshal(request);
+		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
+		socket.send(sendPacket);
+	}
 	
 	public void sendGetFacilitiesRequest(GetFacilitiesRequest request) throws IllegalArgumentException, IllegalAccessException, IOException {
 		byte[] buf = marshallingService.marshal(request);
@@ -81,6 +86,15 @@ public class Client {
 		socket.send(sendPacket);
 	}
 	
+	public void processResponse(Response response) 
+			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+		byte[] buf = new byte [1024];
+		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
+		socket.receive(receivePacket);
+		response = marshallingService.unmarshal(receivePacket.getData(), response.getClass());
+		int error = response.getIsError();
+		System.out.println("Error:" + error);		
+	}
 	
 	public void processGetFacilitiesResponse(GetFacilitiesResponse response) 
 			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
@@ -91,7 +105,7 @@ public class Client {
 		List<Facility> facilities = response.getFacilities();
 		System.out.println("Size:" + facilities.size());
 		
-		//Display all bookings
+		//Display all facilities
 		
 		
 	}

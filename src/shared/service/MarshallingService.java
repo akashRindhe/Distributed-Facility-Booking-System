@@ -122,12 +122,14 @@ public class MarshallingService {
 				buffer.put(field.get(obj).toString().getBytes());
 			}
 		}
+    	System.out.println("Sending marshalled data:" + Arrays.toString(buffer.array()));
 		return buffer.array();
 	}
 	
 	public <T extends Marshallable> T unmarshal(byte[] arr, Class<T> type) 
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		ByteBuffer buffer = ByteBuffer.wrap(arr);
+		System.out.println("Received marshalled data:" + Arrays.toString(arr));
 		return unmarshal(buffer, type);
 	}
 	
