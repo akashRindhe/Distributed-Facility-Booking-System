@@ -10,10 +10,13 @@ import shared.webservice.BookFacilityRequest;
 import shared.webservice.BookFacilityResponse;
 import shared.webservice.ChangeBookingRequest;
 import shared.webservice.ChangeBookingResponse;
+import shared.webservice.ModifyDurationRequest;
 import shared.webservice.QueryFacilityRequest;
 import shared.webservice.QueryFacilityResponse;
 import shared.webservice.Request;
 import shared.webservice.Response;
+import shared.webservice.TransferBookingRequest;
+import shared.webservice.TransferBookingResponse;
 import shared.webservice.Type;
 
 public class Controller {
@@ -28,6 +31,13 @@ public class Controller {
 		
 		case Type.CHANGE_BOOKING:
 			return changeBooking(request);
+			
+		case Type.TRANSFER_BOOKING:
+			return transferBooking(request);
+			
+		case Type.MODIFY_DURATION:
+			return modifyDuration(request);
+			
 		default:
 			return new Response("An unknown error has occurred");
 		}
@@ -79,6 +89,11 @@ public class Controller {
 						data.getConfirmationId());
 		Timestamp bookStart = new Timestamp(booking.getBookingStart().getTime() + data.getOffset()*60*1000); 
 		Timestamp bookEnd   = new Timestamp(booking.getBookingEnd().getTime() + data.getOffset()*60*1000);
+		return changeBooking(booking, bookStart, bookEnd);
+	}
+	
+	private Response changeBooking(
+			Booking booking, Timestamp bookStart, Timestamp bookEnd) {
 		List<Booking> temp =
 				DatabaseAccess.fetchBookings(
 						booking.getFacilityId(),
@@ -87,7 +102,7 @@ public class Controller {
 		
 		for (Booking storedBooking : temp)
 		{
-			if (storedBooking.getId() != data.getConfirmationId())
+			if (storedBooking.getId() != booking.getId())
 				return new Response("The requested alteration is not possible due to clash");
 		}
 			
@@ -97,5 +112,23 @@ public class Controller {
 		DatabaseAccess.changeBooking(booking);
 		responseData.setAcknowledgement("Your booking has been successfully altered in the system");
 		return new Response(responseData);
+	}
+
+	private Response transferBooking(Request request) {
+		TransferBookingRequest data =
+				(TransferBookingRequest) request.getRequestData();
+		DatabaseAccess
+			.changeBookingUserId(
+					data.getBookingId(), data.getNewUserId());
+		TransferBookingResponse responseData = new TransferBookingResponse();
+		responseData.setAcknowledgement("Booking transferred successfully");
+		return new Response(responseData);
+	}
+	
+	private Response modifyDuration(Request request) {
+		ModifyDurationRequest data =
+				(ModifyDurationRequest) request.getRequestData();
+		Booking booking = DatabaseAccess.fetchBookingById(data.getBookingId());
+		return changeBooking(booking, data.getStart(), data.getEnd());
 	}
 }

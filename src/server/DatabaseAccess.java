@@ -243,6 +243,34 @@ class DatabaseAccess {
 		return bookings;
 	}
 	
+	public static Booking fetchLatestBooking() {
+		List<Booking> bookings = new ArrayList<Booking>();
+		try {
+			Connection connection = connectToDB();
+			Statement stmt = connection.createStatement();
+			String sql = "SELECT * FROM Booking ORDER BY id DESC LIMIT 1";
+			ResultSet rs = stmt.executeQuery(sql);
+			while (rs.next())
+			{
+				Booking booking = new Booking();
+				booking.setId(rs.getInt("id"));
+				booking.setFacilityId(rs.getInt("facilityId"));
+				booking.setUserId(rs.getString("userId"));
+				booking.setBookingStart(rs.getTimestamp("bookingStart"));
+				booking.setBookingEnd(rs.getTimestamp("bookingEnd"));
+				bookings.add(booking);
+			}
+			connection.close();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			System.out.println("SQL Driver not found");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Connection Error");
+		}
+		return bookings.get(0);
+	}
+	
 	public static int addBooking (Booking booking)
 	{
 		try {
@@ -264,7 +292,7 @@ class DatabaseAccess {
 			// TODO Auto-generated catch block
 			System.out.println("Connection Error");
 		}
-		return -1;
+		return fetchLatestBooking().getId();
 	}
 	
 	public static void changeBooking (Booking booking)
@@ -276,6 +304,25 @@ class DatabaseAccess {
 			preparedStmt.setTimestamp(1, booking.getBookingStart());
 			preparedStmt.setTimestamp(2, booking.getBookingEnd());
 			preparedStmt.setInt(3,booking.getId());
+			
+			preparedStmt.execute();
+			connection.close();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			System.out.println("SQL Driver not found");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Connection Error");
+		}
+	}
+	
+	public static void changeBookingUserId(int bookingId, int newUserId) {
+		try {
+			Connection connection = connectToDB();
+			String sql = "UPDATE Booking SET userId = ? WHERE id = ?";
+			PreparedStatement preparedStmt = connection.prepareStatement(sql); 
+			preparedStmt.setInt(1, newUserId);
+			preparedStmt.setInt(2, bookingId);
 			
 			preparedStmt.execute();
 			connection.close();
