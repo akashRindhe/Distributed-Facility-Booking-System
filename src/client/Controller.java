@@ -1,5 +1,6 @@
 package client;
 
+import shared.Marshallable;
 import shared.model.Booking;
 import shared.webservice.*;
 
@@ -7,6 +8,14 @@ import java.sql.Timestamp;
 import java.util.List;
 
 public class Controller {
+	
+	public Request generateRequest(Marshallable marshallable) {
+		Request request = new Request();
+		request.setRequestId("0001");
+		request.setRequestType(5);
+		request.setRequestData(marshallable);
+		return request;
+	}
 	
 	public GetFacilitiesRequest generateFacilityRequest () {
 		

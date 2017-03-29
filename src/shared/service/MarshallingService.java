@@ -9,8 +9,10 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import shared.webservice.*;
 import shared.Marshallable;
 
+@SuppressWarnings("unused")
 public class MarshallingService {
 	
 	private static MarshallingService instance;

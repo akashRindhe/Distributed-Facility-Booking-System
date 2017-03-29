@@ -36,16 +36,17 @@ public class Client {
 		this.marshallingService = MarshallingService.getInstance();
 	}
 	
-	public void start(GetFacilitiesRequest request) throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+	public void start(Request request) throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		socket = new DatagramSocket(clientPort);
 		byte[] buf = marshallingService.marshal(request);
 		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
 		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 		try {
 			socket.send(sendPacket);
+			System.out.println("Waiting for response: " );
 			socket.receive(receivePacket);
-			GetFacilitiesResponse response = marshallingService.unmarshal(receivePacket.getData(), GetFacilitiesResponse.class);
-			facilities = response.getFacilities();
+			Response response = marshallingService.unmarshal(receivePacket.getData(), Response.class);
+			System.out.println("Response: " + response.getData());
 		} catch (IOException e) {
 			throw e;
 		}
@@ -53,6 +54,13 @@ public class Client {
 	
 	public void finish() {
 		this.socket.close();
+	}
+	
+	
+	public void sendGetFacilitiesRequest(GetFacilitiesRequest request) throws IllegalArgumentException, IllegalAccessException, IOException {
+		byte[] buf = marshallingService.marshal(request);
+		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
+		socket.send(sendPacket);
 	}
 	
 	public void sendQueryFacilityRequest(QueryFacilityRequest queryRequest) throws IllegalArgumentException, IllegalAccessException, IOException {
@@ -73,6 +81,20 @@ public class Client {
 		socket.send(sendPacket);
 	}
 	
+	
+	public void processGetFacilitiesResponse(GetFacilitiesResponse response) 
+			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+		byte[] buf = new byte [1024];
+		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
+		socket.receive(receivePacket);
+		response = marshallingService.unmarshal(receivePacket.getData(), response.getClass());
+		List<Facility> facilities = response.getFacilities();
+		System.out.println("Size:" + facilities.size());
+		
+		//Display all bookings
+		
+		
+	}
 	public void processQueryFacilityResponse(QueryFacilityResponse response) 
 			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		byte[] buf = new byte [1024];

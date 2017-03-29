@@ -40,7 +40,12 @@ public class Main {
 			int choice;
 			System.out.println("Sending getFacilityRequest");
 			GetFacilitiesRequest getFacilityRequest = controller.generateFacilityRequest();
-			client.start(getFacilityRequest);
+			
+			Request request = controller.generateRequest(getFacilityRequest);
+			
+			client.start(request);
+			
+			
 			System.out.println("Processed getFacilityResponse");
 			
 			facilities = client.getFacilities();
@@ -263,7 +268,8 @@ public class Main {
 			} while (choice!=7);
 		}
 		catch (Exception e){
-			 System.err.println("Caught Exception: " + e.getMessage() + "\n"+e.getStackTrace() + " caused by " + e.getCause() + e.toString());
+			 System.err.println(e.getStackTrace() + " caused by " + e.getCause() + e.toString());
+			 e.printStackTrace();
 			 //System.err.println("Please provide valid inputs.");
 			 System.exit(-1);
 		}		
