@@ -6,4 +6,5 @@ public interface Type {
 	int CHANGE_BOOKING = 2;
 	int TRANSFER_BOOKING = 3;
 	int MODIFY_DURATION = 4;
+	int GET_FACILITIES = 5;
 }

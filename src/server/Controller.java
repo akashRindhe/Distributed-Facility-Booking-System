@@ -10,6 +10,7 @@ import shared.webservice.BookFacilityRequest;
 import shared.webservice.BookFacilityResponse;
 import shared.webservice.ChangeBookingRequest;
 import shared.webservice.ChangeBookingResponse;
+import shared.webservice.GetFacilitiesResponse;
 import shared.webservice.ModifyDurationRequest;
 import shared.webservice.QueryFacilityRequest;
 import shared.webservice.QueryFacilityResponse;
@@ -37,6 +38,9 @@ public class Controller {
 			
 		case Type.MODIFY_DURATION:
 			return modifyDuration(request);
+			
+		case Type.GET_FACILITIES:
+			return getFacilities(request);
 			
 		default:
 			return new Response("An unknown error has occurred");
@@ -130,5 +134,12 @@ public class Controller {
 				(ModifyDurationRequest) request.getRequestData();
 		Booking booking = DatabaseAccess.fetchBookingById(data.getBookingId());
 		return changeBooking(booking, data.getStart(), data.getEnd());
+	}
+	
+	private Response getFacilities(Request request) {
+		GetFacilitiesResponse responseData = new GetFacilitiesResponse();
+		responseData.setFacilities(DatabaseAccess.fetchAllFacilities());
+		
+		return new Response(responseData);
 	}
 }
