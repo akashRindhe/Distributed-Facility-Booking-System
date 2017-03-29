@@ -16,7 +16,7 @@ import shared.webservice.*;
 
 public class Client {
 	
-	private int port;
+	private int clientPort, serverPort;
 	private DatagramSocket socket;
 	private Controller controller;
 	private InetAddress serverAddress;
@@ -28,18 +28,19 @@ public class Client {
 		return facilities;
 	}
 
-	Client (int port, InetAddress address) {
-		this.port = port;
+	Client (int clientPort, int serverPort, InetAddress address) {
+		this.clientPort = clientPort;
+		this.serverPort = serverPort;
 		this.controller = new Controller();
 		this.serverAddress = address;
 		this.marshallingService = MarshallingService.getInstance();
 	}
 	
 	public void start(GetFacilitiesRequest request) throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
-		socket = new DatagramSocket(port);
+		socket = new DatagramSocket(clientPort);
 		byte[] buf = marshallingService.marshal(request);
-		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.port);
-		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.port);
+		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
+		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 		try {
 			socket.send(sendPacket);
 			socket.receive(receivePacket);
@@ -56,26 +57,26 @@ public class Client {
 	
 	public void sendQueryFacilityRequest(QueryFacilityRequest queryRequest) throws IllegalArgumentException, IllegalAccessException, IOException {
 		byte[] buf = marshallingService.marshal(queryRequest);
-		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.port);
+		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
 		socket.send(sendPacket);
 	}
 	
 	public void sendBookFacilityRequest(BookFacilityRequest request) throws IllegalArgumentException, IllegalAccessException, IOException {
 		byte[] buf = marshallingService.marshal(request);
-		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.port);
+		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
 		socket.send(sendPacket);
 	}
 	
 	public void sendChangeBookingRequest(ChangeBookingRequest request) throws IllegalArgumentException, IllegalAccessException, IOException {
 		byte[] buf = marshallingService.marshal(request);
-		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.port);
+		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
 		socket.send(sendPacket);
 	}
 	
 	public void processQueryFacilityResponse(QueryFacilityResponse response) 
 			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		byte[] buf = new byte [1024];
-		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.port);
+		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 		socket.receive(receivePacket);
 		response = marshallingService.unmarshal(receivePacket.getData(), response.getClass());
 		List<Booking> bookings = response.getBookings();
@@ -88,7 +89,7 @@ public class Client {
 	public void processBookFacilityResponse(BookFacilityResponse response) 
 			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		byte[] buf = new byte [1024];
-		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.port);
+		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 		socket.receive(receivePacket);
 		response = marshallingService.unmarshal(receivePacket.getData(), response.getClass());
 		
@@ -99,7 +100,7 @@ public class Client {
 	public void processChangeBookingResponse(ChangeBookingResponse response) 
 			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		byte[] buf = new byte [1024];
-		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.port);
+		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 		socket.receive(receivePacket);
 		response = marshallingService.unmarshal(receivePacket.getData(), response.getClass());
 		

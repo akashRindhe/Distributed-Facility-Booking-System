@@ -22,21 +22,26 @@ import shared.webservice.*;
 public class Main {
 	
 	public static void main(String[] args) throws Exception {
+		System.out.println("Client terminal starting");
 		Console console = new Console();
 		OptionParser optParser = console.getParser();
 		OptionSet optSet = optParser.parse(args);
-		int port = (int) optSet.valueOf("port");
+		int clientPort = (int) optSet.valueOf("clientPort");
 		String ip = (String) optSet.valueOf("ip");
+		int serverPort = (int) optSet.valueOf("serverPort");
 		String userId = (String) optSet.valueOf("userId");
-		final Client client = new Client(port, InetAddress.getByName(ip));
+		final Client client = new Client(clientPort, serverPort, InetAddress.getByName(ip));
+		System.out.println("Client launched!");
 		List<Facility> facilities;
 		try { 
 			optParser.parse(args);
 			Scanner sc = console.getScanner();
 			Controller controller = new Controller();
 			int choice;
+			System.out.println("Sending getFacilityRequest");
 			GetFacilitiesRequest getFacilityRequest = controller.generateFacilityRequest();
 			client.start(getFacilityRequest);
+			System.out.println("Processed getFacilityResponse");
 			
 			facilities = client.getFacilities();
 			//Display facilities
@@ -258,7 +263,7 @@ public class Main {
 			} while (choice!=7);
 		}
 		catch (Exception e){
-			 System.err.println("Caught Exception: " + e.getMessage() + "\n"+e.getStackTrace() + " caused by " + e.getCause());
+			 System.err.println("Caught Exception: " + e.getMessage() + "\n"+e.getStackTrace() + " caused by " + e.getCause() + e.toString());
 			 //System.err.println("Please provide valid inputs.");
 			 System.exit(-1);
 		}		

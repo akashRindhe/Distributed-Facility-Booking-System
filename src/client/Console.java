@@ -13,7 +13,8 @@ public class Console {
 	public OptionParser getParser() {
 		OptionParser optParser = new OptionParser();
 		optParser.accepts("ip").withRequiredArg().required().ofType(String.class);
-		optParser.accepts("port").withRequiredArg().required().ofType(Integer.class);
+		optParser.accepts("clientPort").withRequiredArg().required().ofType(Integer.class);
+		optParser.accepts("serverPort").withRequiredArg().required().ofType(Integer.class);
 		optParser.accepts("userId").withRequiredArg().required().ofType(String.class);
 		return optParser;
 	}
