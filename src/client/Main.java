@@ -32,12 +32,17 @@ public class Main {
 				{
 					case 1: System.out.print("Enter facility name: ");
 							facilityName = sc.next();
-							System.out.print("Enter number of days: ");
+							System.out.print("Enter number of days (not more than 7) : ");
 							int length = sc.nextInt();
-							List<String> listDays = new ArrayList<String>(length); 
+							if (length > 7) {
+								System.out.println("Number of days can not be more than 7)");
+								System.exit(-1);
+							}
+							List<DayOfWeek> listDays = new ArrayList<DayOfWeek>(length); 
 							for (int i=0; i<length; i++) {
 								System.out.print("Enter day "+ (i+1) + ": ");
-								listDays.add(sc.next());
+								String queryDay= sc.next().toUpperCase();
+								listDays.add(DayOfWeek.valueOf(queryDay));
 							}
 							
 							//Generate QueryFacility request object
@@ -169,7 +174,7 @@ public class Main {
 							bookingRequest.setFacilityName(facilityName);
 							bookingRequest.setStartTimeStamp(startTimeStamp);
 							bookingRequest.setEndTimeStamp(endTimeStamp);
-							System.out.println("Booking facility " + facilityName + " on " + bookingDay + " from " + start + " to " + end);
+							System.out.println("Booking facility " + facilityName + " on " + bookingDay + ", " + bookingDate +"/" + bookingMonth + "/" + bookingYear +  " from " + start + " to " + end);
 							break;
 							
 					case 3: System.out.print("Enter booking name: ");
