@@ -15,11 +15,8 @@ import java.util.Scanner;
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import server.Server;
 import shared.DayOfWeek;
-import shared.model.Booking;
 import shared.model.Facility;
-import shared.service.MarshallingService;
 import shared.webservice.*;
 
 public class Main {
@@ -32,7 +29,6 @@ public class Main {
 		String ip = (String) optSet.valueOf("ip");
 		String userId = (String) optSet.valueOf("userId");
 		final Client client = new Client(port, InetAddress.getByName(ip));
-		byte[] marshalledRequest, marshalledResponse;
 		List<Facility> facilities;
 		try { 
 			optParser.parse(args);
