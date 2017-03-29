@@ -1,13 +1,13 @@
 package shared.webservice;
 
+import java.sql.Timestamp;
 import java.util.List;
 
-import shared.DayOfWeek;
 import shared.Marshallable;
 
 public class QueryFacilityRequest implements Marshallable {
 	private String facilityName;
-	private List<DayOfWeek> days;
+	private List<Timestamp> days;
 	
 	public String getFacilityName() {
 		return facilityName;
@@ -17,11 +17,11 @@ public class QueryFacilityRequest implements Marshallable {
 		this.facilityName = facilityName;
 	}
 
-	public List<DayOfWeek> getDays() {
+	public List<Timestamp> getDays() {
 		return days;
 	}
 
-	public void setDays(List<DayOfWeek> listDays) {
+	public void setDays(List<Timestamp> listDays) {
 		this.days = listDays;
 	}
 	

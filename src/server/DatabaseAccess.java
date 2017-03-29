@@ -181,13 +181,13 @@ class DatabaseAccess {
 		return bookings;
 	}
 	
-	public static List<Booking> fetchBookingsByFacilityId(int id, Date date)
+	public static List<Booking> fetchBookings(String name, Date date)
 	{
 		List<Booking> bookings = new ArrayList<Booking>();
 		try {
 			Connection connection = connectToDB();
 			Statement stmt = connection.createStatement();
-			String sql = "SELECT * FROM Booking WHERE facilityId = " + id + " AND DATE(bookingStart) = " + date + " ORDER BY bookingStart";
+			String sql = "SELECT * FROM Booking WHERE name = '" + name + "' AND DATE(bookingStart) = " + date + " ORDER BY bookingStart";
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next())
 			{
@@ -210,18 +210,50 @@ class DatabaseAccess {
 		return bookings;
 	}
 	
-	public static void addBooking (Booking booking)
+	public static List<Booking> fetchBookings(int id, Timestamp start, Timestamp end)
+	{
+		List<Booking> bookings = new ArrayList<Booking>();
+		try {
+			Connection connection = connectToDB();
+			Statement stmt = connection.createStatement();
+			String sql = "SELECT * FROM Booking WHERE "
+					+ "id = " + id + " AND ("
+					+ "bookingStart <= " + start + "AND  bookingEnd >= " + start
+					+ " OR "
+					+ "bookingStart <= " + end + "AND  bookingEnd >= " + end + ")";
+			ResultSet rs = stmt.executeQuery(sql);
+			while (rs.next())
+			{
+				Booking booking = new Booking();
+				booking.setId(rs.getInt("id"));
+				booking.setFacilityId(rs.getInt("facilityId"));
+				booking.setUserId(rs.getString("userId"));
+				booking.setBookingStart(rs.getTimestamp("bookingStart"));
+				booking.setBookingEnd(rs.getTimestamp("bookingEnd"));
+				bookings.add(booking);
+			}
+			connection.close();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			System.out.println("SQL Driver not found");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Connection Error");
+		}
+		return bookings;
+	}
+	
+	public static int addBooking (Booking booking)
 	{
 		try {
 			Connection connection = connectToDB();
-			String sql = "INSERT INTO Booking (id, facilityId, userId, bookingStart, bookingEnd)"
-					+ " values (?, ?, ?, ?, ?)";
+			String sql = "INSERT INTO Booking (facilityId, userId, bookingStart, bookingEnd)"
+					+ " values (?, ?, ?, ?)";
 			PreparedStatement preparedStmt = connection.prepareStatement(sql); 
-			preparedStmt.setInt(1, booking.getId());
-			preparedStmt.setInt(2, booking.getFacilityId());
-			preparedStmt.setString(3, booking.getUserId());
-			preparedStmt.setTimestamp(4, booking.getBookingStart());
-			preparedStmt.setTimestamp(5, booking.getBookingEnd());
+			preparedStmt.setInt(1, booking.getFacilityId());
+			preparedStmt.setString(2, booking.getUserId());
+			preparedStmt.setTimestamp(3, booking.getBookingStart());
+			preparedStmt.setTimestamp(4, booking.getBookingEnd());
 			
 			preparedStmt.execute();
 			connection.close();
@@ -231,7 +263,8 @@ class DatabaseAccess {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			System.out.println("Connection Error");
-		}	
+		}
+		return -1;
 	}
 	
 	public static void alterBooking (Booking booking)

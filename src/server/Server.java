@@ -23,7 +23,7 @@ public class Server {
 		this.controller = new Controller();
 	}
 	
-	public void start() throws IOException {
+	public void start() throws IOException, ClassNotFoundException {
 		socket = new DatagramSocket(port);
 		byte[] buf = new byte[1024];
 		DatagramPacket packet = new DatagramPacket(buf, buf.length);
