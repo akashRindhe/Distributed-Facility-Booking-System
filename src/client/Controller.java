@@ -1,11 +1,18 @@
 package client;
 
+import shared.model.Booking;
 import shared.webservice.*;
 
 import java.sql.Timestamp;
 import java.util.List;
 
 public class Controller {
+	
+	public GetFacilitiesRequest generateFacilityRequest () {
+		
+		return new GetFacilitiesRequest();
+		
+	}
 	
 	public QueryFacilityRequest generateQueryRequest (String facilityName, List<Timestamp> days) {
 		
@@ -16,12 +23,14 @@ public class Controller {
 		
 	}
 	
-	public BookFacilityRequest generateBookingRequest (String facilityName, Timestamp start, Timestamp end) {
+	public BookFacilityRequest generateBookingRequest (String userId, int facilityId, Timestamp start, Timestamp end) {
 		
-		BookFacilityRequest request = new BookFacilityRequest();
-		request.setFacilityName(facilityName);
-		request.setStartTimeStamp(start);
-		request.setEndTimeStamp(end);
+		Booking booking = new Booking();
+		booking.setId(0);
+		booking.setUserId(userId);
+		booking.setBookingStart(start);
+		booking.setBookingStart(end);
+		BookFacilityRequest request = new BookFacilityRequest(booking);
 		return request;
 		
 	}

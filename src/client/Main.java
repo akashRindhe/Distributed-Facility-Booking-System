@@ -18,6 +18,7 @@ import joptsimple.OptionSet;
 import server.Server;
 import shared.DayOfWeek;
 import shared.model.Booking;
+import shared.model.Facility;
 import shared.service.MarshallingService;
 import shared.webservice.*;
 
@@ -29,15 +30,24 @@ public class Main {
 		OptionSet optSet = optParser.parse(args);
 		int port = (int) optSet.valueOf("port");
 		String ip = (String) optSet.valueOf("ip");
+		String userId = (String) optSet.valueOf("userId");
 		final Client client = new Client(port, InetAddress.getByName(ip));
-		MarshallingService marshallService = MarshallingService.getInstance();
 		byte[] marshalledRequest, marshalledResponse;
-		
-		try {
+		List<Facility> facilities;
+		try { 
 			optParser.parse(args);
 			Scanner sc = console.getScanner();
 			Controller controller = new Controller();
 			int choice;
+			GetFacilitiesRequest getFacilityRequest = controller.generateFacilityRequest();
+			client.start(getFacilityRequest);
+			
+			facilities = client.getFacilities();
+			//Display facilities
+			System.out.println("Facility ID   |    Facility Name ");
+			for(int i = 0; i<facilities.size(); i++)
+				System.out.println(facilities.get(i).getId() + ":" + facilities.get(i).getName());
+			
 			do {
 				console.displayMenu();
 				choice = sc.nextInt();
@@ -61,27 +71,22 @@ public class Main {
 							
 							QueryFacilityRequest queryRequest = controller.generateQueryRequest(facilityName, listDays);
 							
-							marshalledRequest = marshallService.marshal(queryRequest);
-							System.out.println(marshalledRequest.getClass());
-							System.out.println("Querying for facility " + facilityName);
 							// Send this marshalledRequest via UDP to Server
-							//marshalledResponse = null;
-							// Receive marshalledResponse from Server
-							QueryFacilityRequest unmarshalled = marshallService.unmarshal(marshalledRequest, QueryFacilityRequest.class);
-							//System.out.println("Unmarshalled:" + unmarshalled.getClass());
-							System.out.println("Unmarshalled:" + unmarshalled.getFacilityName());
+							client.sendQueryFacilityRequest(queryRequest);
 							
-							System.out.println("Unmarshalled:" + unmarshalled.getDays().get(0));
-							//System.out.println("Unmarshalled:" + unmarshalled.getStartTimeStamp().toString());
+							QueryFacilityResponse queryResponse = new QueryFacilityResponse();
+							System.out.println("Querying for facility " + facilityName);
 							
-							//QueryFacilityResponse queryResponse = marshallService.unmarshal(marshalledResponse, QueryFacilityResponse.class);
-							//System.out.println("Unmarshalled:" + queryResponse.getClass());
-							//List<Booking> bookings = queryResponse.getBookings();
-							
+							// Receive response from Server
+							client.processQueryFacilityResponse(queryResponse);
 							break;
 							
 					case 2: System.out.print("Enter facility name: ");
 							facilityName = sc.next();
+							Facility facility;
+							int index = facilities.indexOf(facilityName);
+							facility =  facilities.get(index);
+							int facilityId = facility.getId();
 							System.out.print("Enter booking day: ");
 							String bookingDay = sc.next();
 							System.out.print("Enter start time for booking (HH:mm): ");
@@ -198,24 +203,17 @@ public class Main {
 							System.out.println("End: " + endTimeStamp.toString());
 							
 							//Generate BookFacility request object
-							BookFacilityRequest bookingRequest = controller.generateBookingRequest(facilityName, startTimeStamp, endTimeStamp );
+							BookFacilityRequest bookingRequest = controller.generateBookingRequest(userId, facilityId, startTimeStamp, endTimeStamp );
 					
-							marshalledRequest = marshallService.marshal(bookingRequest);
-							//System.out.println(marshalledRequest.getClass());
-							System.out.println("Booking facility " + facilityName + " on " + bookingDay + ", " + bookingDate +"/" + bookingMonth + "/" + bookingYear +  " from " + start + " to " + end);
 							// Send this marshalledRequest via UDP to Server
-							//marshalledResponse = null;
-							// Receive marshalledResponse from Server
-							BookFacilityRequest unmarshalle1d = marshallService.unmarshal(marshalledRequest, BookFacilityRequest.class);
-							System.out.println("Unmarshalled:" + unmarshalle1d.getClass());
-							System.out.println("Unmarshalled:" + unmarshalle1d.getFacilityName());
-							System.out.println("Unmarshalled:" + unmarshalle1d.getEndTimeStamp().toString());
-							System.out.println("Unmarshalled:" + unmarshalle1d.getStartTimeStamp().toString());
+							client.sendBookFacilityRequest(bookingRequest);
 							
-							//BookFacilityResponse bookResponse = marshallService.unmarshal(marshalledResponse, BookFacilityResponse.class);
-							//System.out.println("Unmarshalled:" + bookResponse.getClass());
-							//int confirmationId = bookResponse.getConfirmationId();
-							//System.out.println("Booking successful. Confirmation ID: " + confirmationId);
+							BookFacilityResponse bookingResponse = new BookFacilityResponse();
+							System.out.println("Booking facility " + facilityName + " on " + bookingDay + ", " + bookingDate +"/" + bookingMonth + "/" + bookingYear +  " from " + start + " to " + end);
+							
+							// Receive response from Server
+							client.processBookFacilityResponse(bookingResponse);
+							
 							break;
 							
 					case 3: System.out.print("Enter booking name: ");
@@ -223,24 +221,18 @@ public class Main {
 							System.out.print("Enter offset for change (in minutes): ");
 							int offset = sc.nextInt();
 							
-							//Generate ChangeFacility request object
+							//Generate BookFacility request object
 							ChangeBookingRequest changeRequest = controller.generateChangeRequest(bookingId, offset);
-							
-							marshalledRequest = marshallService.marshal(changeRequest);
-							//System.out.println(marshalledRequest.getClass());
-							System.out.println("Changing booking " + bookingId + " by " + offset + " minutes");
+					
 							// Send this marshalledRequest via UDP to Server
+							client.sendChangeBookingRequest(changeRequest);
 							
-							// Receive marshalledResponse from Server
-							marshalledResponse = null;
+							ChangeBookingResponse changeResponse = new ChangeBookingResponse();
+							System.out.println("Changing booking " + bookingId + " by " + offset + " minutes");
 							
-							ChangeBookingResponse changeResponse = marshallService.unmarshal(marshalledResponse, ChangeBookingResponse.class);
-							System.out.println("Unmarshalled:" + changeResponse.getClass());
-							int successChange = changeResponse.getSuccess(); 
-							if (successChange == 1)
-								System.out.println("Change booking successful.");
-							else 
-								System.out.println("Change booking unsuccessful");
+							// Receive response from Server
+							client.processChangeBookingResponse(changeResponse);
+							
 							break;
 							
 					case 4: System.out.print("Enter facility name: ");
@@ -262,6 +254,7 @@ public class Main {
 							break;
 							
 					case 7: System.out.println("Exiting client application");
+							client.finish();
 							break;
 							
 					default:System.out.println("Invalid choice, please enter again...");

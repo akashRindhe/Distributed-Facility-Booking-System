@@ -9,7 +9,7 @@ import shared.DayOfWeek;
 
 public class TimestampGenerator {
 	
-	public Timestamp generateTimestamp(String dayOfWeek, LocalTime time) {
+	public static Timestamp generateTimestamp(String dayOfWeek, LocalTime time) {
 		dayOfWeek=dayOfWeek.toUpperCase();
 		Date todayDate= new java.util.Date();
 		Calendar calendarToday = Calendar.getInstance();
