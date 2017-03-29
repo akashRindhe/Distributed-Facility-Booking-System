@@ -8,6 +8,8 @@ import java.util.List;
 import shared.model.Booking;
 import shared.webservice.BookFacilityRequest;
 import shared.webservice.BookFacilityResponse;
+import shared.webservice.ChangeBookingRequest;
+import shared.webservice.ChangeBookingResponse;
 import shared.webservice.QueryFacilityRequest;
 import shared.webservice.QueryFacilityResponse;
 import shared.webservice.Request;
@@ -23,7 +25,9 @@ public class Controller {
 			
 		case Type.BOOK_FACILITY:
 			return bookFacilty(request);
-
+		
+		case Type.CHANGE_BOOKING:
+			return changeBooking(request);
 		default:
 			return new Response("An unknown error has occurred");
 		}
@@ -64,6 +68,34 @@ public class Controller {
 		
 		BookFacilityResponse responseData = new BookFacilityResponse();
 		responseData.setConfirmationId(DatabaseAccess.addBooking(data.getBooking()));	
+		return new Response(responseData);
+	}
+	
+	private Response changeBooking(Request request){
+		ChangeBookingRequest data = 
+				(ChangeBookingRequest) request.getRequestData();
+		Booking booking = 
+				DatabaseAccess.fetchBookingById(
+						data.getConfirmationId());
+		Timestamp bookStart = new Timestamp(booking.getBookingStart().getTime() + data.getOffset()*60*1000); 
+		Timestamp bookEnd   = new Timestamp(booking.getBookingEnd().getTime() + data.getOffset()*60*1000);
+		List<Booking> temp =
+				DatabaseAccess.fetchBookings(
+						booking.getFacilityId(),
+						bookStart,
+						bookEnd);
+		
+		for (Booking storedBooking : temp)
+		{
+			if (storedBooking.getId() != data.getConfirmationId())
+				return new Response("The requested alteration is not possible due to clash");
+		}
+			
+		booking.setBookingStart(bookStart);
+		booking.setBookingEnd(bookEnd);
+		ChangeBookingResponse responseData = new ChangeBookingResponse();
+		DatabaseAccess.changeBooking(booking);
+		responseData.setAcknowledgement("Your booking has been successfully altered in the system");
 		return new Response(responseData);
 	}
 }

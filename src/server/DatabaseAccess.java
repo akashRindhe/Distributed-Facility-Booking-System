@@ -267,7 +267,7 @@ class DatabaseAccess {
 		return -1;
 	}
 	
-	public static void alterBooking (Booking booking)
+	public static void changeBooking (Booking booking)
 	{
 		try {
 			Connection connection = connectToDB();
