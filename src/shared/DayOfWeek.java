@@ -6,18 +6,15 @@ public enum DayOfWeek {
     private final int value;
 
     DayOfWeek(int value) {
-
         this.value = value;
     }
 
     public int getValue() {
-
         return value;
     }
 
     @Override
     public String toString() {
-
         return value + "";
     }
 }
