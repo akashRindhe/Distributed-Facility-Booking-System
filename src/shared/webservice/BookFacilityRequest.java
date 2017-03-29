@@ -1,35 +1,22 @@
 package shared.webservice;
 
-import java.sql.Timestamp;
-
 import shared.Marshallable;
+import shared.model.Booking;
 
 public class BookFacilityRequest implements Marshallable {
-	private String facilityName;
-	private Timestamp startTimeStamp;
-	private Timestamp endTimeStamp;
+	private Booking booking;
 	
-	public Timestamp getEndTimeStamp() {
-		return endTimeStamp;
+	public BookFacilityRequest(Booking booking) {
+		this.booking = booking;
 	}
 
-	public void setEndTimeStamp(Timestamp endTime) {
-		this.endTimeStamp = endTime;
+	public Booking getBooking() {
+		return booking;
 	}
 
-	public String getFacilityName() {
-		return facilityName;
+	public void setBooking(Booking booking) {
+		this.booking = booking;
 	}
 	
-	public void setFacilityName(String facilityName) {
-		this.facilityName = facilityName;
-	}
 	
-	public Timestamp getStartTimeStamp() {
-		return startTimeStamp;
-	}
-	
-	public void setStartTimeStamp(Timestamp startTime) {
-		this.startTimeStamp = startTime;
-	}
 }
