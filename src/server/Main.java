@@ -8,11 +8,11 @@ public class Main {
 		int port = 4445;
 		final Server server = new Server(port);
 		
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-		    public void run() {
-		       server.finish();
-		    }
-		 });
+//		Runtime.getRuntime().addShutdownHook(new Thread() {
+//		    public void run() {
+//		       server.finish();
+//		    }
+//		 });
 		
 		server.start();
 	}

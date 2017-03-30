@@ -7,4 +7,5 @@ public interface Type {
 	int TRANSFER_BOOKING = 3;
 	int MODIFY_DURATION = 4;
 	int GET_FACILITIES = 5;
+	int CALLBACK = 6;
 }

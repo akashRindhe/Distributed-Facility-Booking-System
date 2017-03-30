@@ -1,5 +1,6 @@
 package server.filter;
 
+import java.net.DatagramPacket;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -12,17 +13,21 @@ public class FilterService {
 		filters = new LinkedList<>();
 	}
 	
-	public boolean performFiltering(Request request) {
+	public boolean performFiltering(Request request, DatagramPacket packet) {
 		Iterator<Filter> iter = filters.iterator();
 		boolean filterSuccess = true;
 		
 		while(iter.hasNext()) {
-			filterSuccess = iter.next().doFilter(request);
+			filterSuccess = iter.next().doFilter(request, packet);
 			if (!filterSuccess) {
 				break;
 			}
 		}
 		
 		return filterSuccess;
+	}
+	
+	public void addFilter(Filter filter) {
+		filters.add(filter);
 	}
 }

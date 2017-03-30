@@ -8,6 +8,7 @@ import java.util.List;
 import shared.model.Booking;
 import shared.webservice.BookFacilityRequest;
 import shared.webservice.BookFacilityResponse;
+import shared.webservice.CallbackResponse;
 import shared.webservice.ChangeBookingRequest;
 import shared.webservice.ChangeBookingResponse;
 import shared.webservice.GetFacilitiesResponse;
@@ -41,6 +42,11 @@ public class Controller {
 			
 		case Type.GET_FACILITIES:
 			return getFacilities(request);
+		
+		case Type.CALLBACK:
+			CallbackResponse responseData = new CallbackResponse();
+			responseData.setAcknowledgement("Callback registered successfully");
+			return new Response(responseData);
 			
 		default:
 			return new Response("An unknown error has occurred");

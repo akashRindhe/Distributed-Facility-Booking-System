@@ -5,12 +5,15 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import server.filter.CallbackFilter;
 import server.filter.FilterService;
 import shared.service.MarshallingService;
 import shared.webservice.Request;
 import shared.webservice.Response;
 
 public class Server {
+	
+	private static Server instance;
 	
 	private int port;
 	private DatagramSocket socket;
@@ -21,6 +24,8 @@ public class Server {
 		this.port = port;
 		this.filterService = new FilterService();
 		this.controller = new Controller();
+		this.filterService.addFilter(new CallbackFilter());
+		instance = this;
 	}
 	
 	public void start() throws IOException, ClassNotFoundException {
@@ -55,7 +60,7 @@ public class Server {
 	private void processRequest(Request request, DatagramPacket packet) 
 			throws IOException, IllegalArgumentException, IllegalAccessException {
 		System.out.println("Processing request of type: " + request.getRequestType());
-		if (filterService.performFiltering(request)) {
+		if (filterService.performFiltering(request, packet)) {
 			Response response;
 			try {
 				response = controller.processRequest(request);
@@ -68,7 +73,7 @@ public class Server {
 		}
 	}
 	
-	private void sendResponse(
+	public void sendResponse(
 			Response response, InetAddress address, int port) 
 					throws IllegalArgumentException, IllegalAccessException, IOException {
 		byte[] buf = MarshallingService.getInstance().marshal(response);
@@ -77,5 +82,8 @@ public class Server {
 		socket.send(packet);
 		System.out.println("Response sent");
 	}
-
+	
+	public static Server getInstance() {
+		return instance;
+	}
 }

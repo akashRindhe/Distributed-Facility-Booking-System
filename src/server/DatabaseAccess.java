@@ -6,7 +6,7 @@ import shared.model.*;
 import java.util.*;
 
 
-class DatabaseAccess {
+public class DatabaseAccess {
 	
 	private static Connection connectToDB() throws ClassNotFoundException, SQLException{
 		String driverName = "com.mysql.jdbc.Driver";
