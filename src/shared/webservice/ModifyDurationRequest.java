@@ -1,13 +1,10 @@
 package shared.webservice;
 
-import java.sql.Timestamp;
-
 import shared.Marshallable;
 
 public class ModifyDurationRequest implements Marshallable {
 	private int bookingId;
-	private Timestamp start;
-	private Timestamp end;
+	private int offset;
 	
 	public int getBookingId() {
 		return bookingId;
@@ -16,20 +13,12 @@ public class ModifyDurationRequest implements Marshallable {
 	public void setBookingId(int bookingId) {
 		this.bookingId = bookingId;
 	}
-	
-	public Timestamp getStart() {
-		return start;
+
+	public int getOffset() {
+		return offset;
 	}
-	
-	public void setStart(Timestamp start) {
-		this.start = start;
-	}
-	
-	public Timestamp getEnd() {
-		return end;
-	}
-	
-	public void setEnd(Timestamp end) {
-		this.end = end;
+
+	public void setOffset(int offset) {
+		this.offset = offset;
 	}
 }

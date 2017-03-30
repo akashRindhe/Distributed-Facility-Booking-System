@@ -139,7 +139,8 @@ public class Controller {
 		ModifyDurationRequest data =
 				(ModifyDurationRequest) request.getRequestData();
 		Booking booking = DatabaseAccess.fetchBookingById(data.getBookingId());
-		return changeBooking(booking, data.getStart(), data.getEnd());
+		Timestamp bookEnd   = new Timestamp(booking.getBookingEnd().getTime() + data.getOffset()*60*1000);
+		return changeBooking(booking, booking.getBookingStart(), bookEnd);
 	}
 	
 	private Response getFacilities(Request request) {
