@@ -76,21 +76,26 @@ public class Client {
 	
 	public void processGetFacilitiesResponse(Response response) 
 			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
-		GetFacilitiesResponse facilitiesResponse = (GetFacilitiesResponse) response.getData();
-		facilities = facilitiesResponse.getFacilities();
-		System.out.println("Size:" + facilities.size());
-		
-		//Display all facilities
-		System.out.println("ID     |    Facility Name ");
-		System.out.println("--------------------------");
-		for(int i = 0; i<facilities.size(); i++)
-			System.out.println(facilities.get(i).getId() + "  |      " + facilities.get(i).getName());
+		if (response.getIsError() == 1) {
+			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
+		} 
+		else {
+			GetFacilitiesResponse facilitiesResponse = (GetFacilitiesResponse) response.getData();
+			facilities = facilitiesResponse.getFacilities();
+			System.out.println("Size:" + facilities.size());
+			
+			//Display all facilities
+			System.out.println("ID     |    Facility Name ");
+			System.out.println("--------------------------");
+			for(int i = 0; i<facilities.size(); i++)
+				System.out.println(facilities.get(i).getId() + "  |      " + facilities.get(i).getName());
+		}
 	}
 	public void processQueryFacilityResponse(Response response) 
 			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		
 		if (response.getIsError() == 1) {
-			System.out.println("An error occured. " + response.getData());
+			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
 		}
 		else {
 			QueryFacilityResponse queryResponse = (QueryFacilityResponse) response.getData();
@@ -98,6 +103,7 @@ public class Client {
 			
 			//Display all bookings
 			System.out.println("Booking ID|  User ID  |   Facility ID  |   From  |    To    ");
+			System.out.println("------------------------------------------------------------");
 			for(int i = 0; i<bookings.size(); i++)
 				System.out.println(bookings.get(i).getId() + "        |" + bookings.get(i).getFacilityId()+  "|" +bookings.get(i).getUserId() +  "|" +bookings.get(i).getBookingStart().toString() + "|" +bookings.get(i).getBookingEnd().toString() );	
 		}
