@@ -218,9 +218,9 @@ public class DatabaseAccess {
 			Statement stmt = connection.createStatement();
 			String sql = "SELECT * FROM Booking WHERE "
 					+ "id = " + id + " AND ("
-					+ "bookingStart <= " + start + "AND  bookingEnd >= " + start
-					+ " OR "
-					+ "bookingStart <= " + end + "AND  bookingEnd >= " + end + ")";
+					+ "bookingStart <= '" + start + "' AND  bookingEnd >= '" + start
+					+ "') OR ("
+					+ "bookingStart <= '" + end + "' AND  bookingEnd >= '" + end + "')";
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next())
 			{
@@ -267,6 +267,7 @@ public class DatabaseAccess {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			System.out.println("Connection Error");
+			e.printStackTrace();
 		}
 		return bookings.get(0);
 	}
@@ -291,6 +292,7 @@ public class DatabaseAccess {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			System.out.println("Connection Error");
+			e.printStackTrace();
 		}
 		return fetchLatestBooking().getId();
 	}
