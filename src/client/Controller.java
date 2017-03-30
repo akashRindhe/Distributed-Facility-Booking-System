@@ -62,4 +62,14 @@ public class Controller {
 		return request;
 	}
 
+	public ModifyDurationRequest generateModifyRequest(int bookingId,
+			int changeDurationAmount) {
+		
+		ModifyDurationRequest request = new ModifyDurationRequest();
+		request.setBookingId(bookingId);
+		request.setOffset(changeDurationAmount);
+		return request;
+		
+	}
+
 }

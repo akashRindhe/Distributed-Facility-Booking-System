@@ -283,7 +283,7 @@ public class Main {
 							client.sendRequest(request);
 							//System.out.println("Changing booking " + bookingId + " by " + offset + " minutes");
 							response = client.receiveResponse();
-							client.processModifyBookingResponse(response);
+							client.processModifyDurationResponse(response);
 							
 							break;
 							

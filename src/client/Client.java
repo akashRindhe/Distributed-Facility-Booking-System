@@ -124,13 +124,29 @@ public class Client {
 		else {
 			ChangeBookingResponse changeResponse = (ChangeBookingResponse) response.getData();
 			String ack = changeResponse.getAcknowledgement();
-			System.out.println("Change ACK: " + ack);
+			System.out.println("Server acknowledgement :" + ack);
 		}
 	}
 
 	public void processTransferBookingResponse(Response response) {
-		TransferBookingResponse transferResponse = (TransferBookingResponse) response.getData();
-		String ack = transferResponse.getAcknowledgement();
-		System.out.println("Transfer ACK: " + ack);
+		if (response.getIsError() == 1) {
+			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
+		}
+		else {
+			TransferBookingResponse transferResponse = (TransferBookingResponse) response.getData();
+			String ack = transferResponse.getAcknowledgement();
+			System.out.println("Server acknowledgement :" +  ack);
+		}
+	}
+
+	public void processModifyDurationResponse(Response response) {
+		if (response.getIsError() == 1) {
+			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
+		}
+		else {
+			ModifyDurationResponse modifyResponse = (ModifyDurationResponse) response.getData();
+			String ack = modifyResponse.getAcknowledgement();
+			System.out.println("Server acknowledgement :" + ack);
+		}
 	}
 }
