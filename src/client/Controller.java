@@ -18,15 +18,14 @@ public class Controller {
 	}
 	
 	public GetFacilitiesRequest generateFacilityRequest () {
-		
 		return new GetFacilitiesRequest();
 		
 	}
 	
-	public QueryFacilityRequest generateQueryRequest (String facilityName, List<Timestamp> days) {
+	public QueryFacilityRequest generateQueryRequest (int facilityId, List<Timestamp> days) {
 		
 		QueryFacilityRequest request = new QueryFacilityRequest();
-		request.setFacilityName(facilityName);
+		request.setFacilityId(facilityId);
 		request.setDays(days);
 		return request;
 		
@@ -37,20 +36,30 @@ public class Controller {
 		Booking booking = new Booking();
 		booking.setId(0);
 		booking.setUserId(userId);
+		booking.setFacilityId(facilityId);
 		booking.setBookingStart(start);
-		booking.setBookingStart(end);
+		booking.setBookingEnd(end);
 		BookFacilityRequest request = new BookFacilityRequest(booking);
 		return request;
 		
 	}
 
-	public ChangeBookingRequest generateChangeRequest (int bookingId, int offsetMinutes) {
+	public ChangeBookingRequest generateChangeRequest(int bookingId, int offsetMinutes) {
 		
 		ChangeBookingRequest request = new ChangeBookingRequest();
 		request.setConfirmationId(bookingId);
 		request.setOffset(offsetMinutes);
 		return request;
 		
+	}
+
+	public TransferBookingRequest generateTransferRequest(
+			String transferUserId, int bookingId) {
+		
+		TransferBookingRequest request = new TransferBookingRequest();
+		request.setNewUserId(transferUserId);
+		request.setBookingId(bookingId);
+		return request;
 	}
 
 }

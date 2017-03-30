@@ -25,7 +25,7 @@ public class Console {
 		System.out.println("2. Book Facility");
 		System.out.println("3. Change Booking");
 		System.out.println("4. Monitor ");
-		System.out.println("5. An idempotent service");
+		System.out.println("5. Transfer booking to User");
 		System.out.println("6. A non-idempotent service");
 		System.out.println("7. Quit");
 		System.out.print("Enter an option: ");

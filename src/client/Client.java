@@ -7,8 +7,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import server.Controller;
-import shared.Marshallable;
 import shared.model.Booking;
 import shared.model.Facility;
 import shared.service.MarshallingService;
@@ -18,11 +16,10 @@ public class Client {
 	
 	private int clientPort, serverPort;
 	private DatagramSocket socket;
-	private Controller controller;
 	private InetAddress serverAddress;
 	private MarshallingService marshallingService;
 	
-	private List<Facility> facilities = new ArrayList<Facility>();
+	private List<Facility> facilities;
 	
 	public List<Facility> getFacilities() {
 		return facilities;
@@ -31,22 +28,28 @@ public class Client {
 	Client (int clientPort, int serverPort, InetAddress address) {
 		this.clientPort = clientPort;
 		this.serverPort = serverPort;
-		this.controller = new Controller();
 		this.serverAddress = address;
 		this.marshallingService = MarshallingService.getInstance();
+		this.facilities = new ArrayList<Facility>();
 	}
 	
 	public void start(Request request) throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		socket = new DatagramSocket(clientPort);
-		byte[] buf = marshallingService.marshal(request);
-		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
-		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
+		byte[] sendBuf = marshallingService.marshal(request);
+		DatagramPacket sendPacket = new DatagramPacket(sendBuf, sendBuf.length, this.serverAddress, this.serverPort);
+		byte[] recBuf = new byte[10000];
+		DatagramPacket receivePacket = new DatagramPacket(recBuf, recBuf.length);
 		try {
 			socket.send(sendPacket);
-			System.out.println("Waiting for response: " );
+			//System.out.println("Waiting for response: " );
+			//System.out.println("sendPacket length:" + sendPacket.getLength());
 			socket.receive(receivePacket);
+			System.out.println("receivePacket length:" + receivePacket.getLength());
 			Response response = marshallingService.unmarshal(receivePacket.getData(), Response.class);
-			System.out.println("Response: " + response.getData());
+			processGetFacilitiesResponse(response);
+			
+			System.out.println("Response Class: " + response.getData().getClass());
+			
 		} catch (IOException e) {
 			throw e;
 		}
@@ -62,91 +65,72 @@ public class Client {
 		socket.send(sendPacket);
 	}
 	
-	public void sendGetFacilitiesRequest(GetFacilitiesRequest request) throws IllegalArgumentException, IllegalAccessException, IOException {
-		byte[] buf = marshallingService.marshal(request);
-		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
-		socket.send(sendPacket);
-	}
-	
-	public void sendQueryFacilityRequest(QueryFacilityRequest queryRequest) throws IllegalArgumentException, IllegalAccessException, IOException {
-		byte[] buf = marshallingService.marshal(queryRequest);
-		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
-		socket.send(sendPacket);
-	}
-	
-	public void sendBookFacilityRequest(BookFacilityRequest request) throws IllegalArgumentException, IllegalAccessException, IOException {
-		byte[] buf = marshallingService.marshal(request);
-		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
-		socket.send(sendPacket);
-	}
-	
-	public void sendChangeBookingRequest(ChangeBookingRequest request) throws IllegalArgumentException, IllegalAccessException, IOException {
-		byte[] buf = marshallingService.marshal(request);
-		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
-		socket.send(sendPacket);
-	}
-	
-	public void processResponse(Response response) 
-			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
-		byte[] buf = new byte [1024];
+	public Response receiveResponse() throws IllegalArgumentException, IllegalAccessException, IOException, InstantiationException, ClassNotFoundException {
+		byte[] buf = new byte[10000];
 		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 		socket.receive(receivePacket);
-		response = marshallingService.unmarshal(receivePacket.getData(), response.getClass());
-		int error = response.getIsError();
-		System.out.println("Error:" + error);		
+		System.out.println("receivePacket length:" +receivePacket.getLength());
+		Response response = marshallingService.unmarshal(receivePacket.getData(), Response.class);
+		return response;
 	}
 	
-	public void processGetFacilitiesResponse(GetFacilitiesResponse response) 
+	public void processGetFacilitiesResponse(Response response) 
 			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
-		byte[] buf = new byte [1024];
-		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
-		socket.receive(receivePacket);
-		response = marshallingService.unmarshal(receivePacket.getData(), response.getClass());
-		List<Facility> facilities = response.getFacilities();
+		GetFacilitiesResponse facilitiesResponse = (GetFacilitiesResponse) response.getData();
+		facilities = facilitiesResponse.getFacilities();
 		System.out.println("Size:" + facilities.size());
 		
 		//Display all facilities
-		
-		
+		System.out.println("ID     |    Facility Name ");
+		System.out.println("--------------------------");
+		for(int i = 0; i<facilities.size(); i++)
+			System.out.println(facilities.get(i).getId() + "  |      " + facilities.get(i).getName());
 	}
-	public void processQueryFacilityResponse(QueryFacilityResponse response) 
+	public void processQueryFacilityResponse(Response response) 
 			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
-		byte[] buf = new byte [1024];
-		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
-		socket.receive(receivePacket);
-		response = marshallingService.unmarshal(receivePacket.getData(), response.getClass());
-		List<Booking> bookings = response.getBookings();
 		
-		//Display all bookings
-		
-		
-	}
-	
-	public void processBookFacilityResponse(BookFacilityResponse response) 
-			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
-		byte[] buf = new byte [1024];
-		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
-		socket.receive(receivePacket);
-		response = marshallingService.unmarshal(receivePacket.getData(), response.getClass());
-		
-		int confirmationId = response.getConfirmationId();
-		System.out.println("Confirmation ID for booking: " + confirmationId);
-	}
-	
-	public void processChangeBookingResponse(ChangeBookingResponse response) 
-			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
-		byte[] buf = new byte [1024];
-		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
-		socket.receive(receivePacket);
-		response = marshallingService.unmarshal(receivePacket.getData(), response.getClass());
-		
-		int success = response.getSuccess();
-		if (success == 1) 
-			System.out.println("Booking changed successfully.");
-		else
-			System.out.println("Booking could not be changed.");
+		if (response.getIsError() == 1) {
+			System.out.println("An error occured. " + response.getData());
+		}
+		else {
+			QueryFacilityResponse queryResponse = (QueryFacilityResponse) response.getData();
+			List<Booking> bookings = queryResponse.getBookings();
 			
+			//Display all bookings
+			System.out.println("Booking ID|  User ID  |   Facility ID  |   From  |    To    ");
+			for(int i = 0; i<bookings.size(); i++)
+				System.out.println(bookings.get(i).getId() + "        |" + bookings.get(i).getFacilityId()+  "|" +bookings.get(i).getUserId() +  "|" +bookings.get(i).getBookingStart().toString() + "|" +bookings.get(i).getBookingEnd().toString() );	
+		}
+	}
+	
+	public void processBookFacilityResponse(Response response) 
+			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+		
+		if (response.getIsError() == 1) {
+			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
+		}
+		else {
+			BookFacilityResponse queryResponse = (BookFacilityResponse) response.getData();
+			int confirmationId = queryResponse.getConfirmationId();
+			System.out.println("Confirmation ID for booking: " + confirmationId);
+		}
+	}
+	
+	public void processChangeBookingResponse(Response response) 
+			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+		if (response.getIsError() == 1) {
+			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
+		}
+		else {
+			ChangeBookingResponse changeResponse = (ChangeBookingResponse) response.getData();
+			String ack = changeResponse.getAcknowledgement();
+			System.out.println("Change ACK: " + ack);
+		}
 	}
 
-
+	public void processTransferBookingResponse(Response response) {
+		TransferBookingResponse transferResponse = (TransferBookingResponse) response.getData();
+		String ack = transferResponse.getAcknowledgement();
+		System.out.println("Transfer ACK: " + ack);
+	}
 }

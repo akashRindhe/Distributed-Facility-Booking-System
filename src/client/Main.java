@@ -2,6 +2,7 @@ package client;
 
 import client.Console;
 import client.Controller.*;
+import client.utility.TimestampGenerator;
 
 import java.net.InetAddress;
 import java.sql.Timestamp;
@@ -11,18 +12,21 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import shared.DayOfWeek;
+import shared.model.Booking;
 import shared.model.Facility;
 import shared.webservice.*;
 
 public class Main {
 	
 	public static void main(String[] args) throws Exception {
-		System.out.println("Client terminal starting");
+		System.out.println("Client terminal starting...");
 		Console console = new Console();
 		OptionParser optParser = console.getParser();
 		OptionSet optSet = optParser.parse(args);
@@ -32,7 +36,8 @@ public class Main {
 		String userId = (String) optSet.valueOf("userId");
 		final Client client = new Client(clientPort, serverPort, InetAddress.getByName(ip));
 		System.out.println("Client launched!");
-		List<Facility> facilities;
+		List<Facility> facilities = new ArrayList<Facility>();
+		
 		try { 
 			optParser.parse(args);
 			Scanner sc = console.getScanner();
@@ -43,24 +48,26 @@ public class Main {
 			
 			Request request = controller.generateRequest(getFacilityRequest, Type.GET_FACILITIES);
 			Response response = new Response();
-			client.start(request);
 			
+			client.start(request);
 			System.out.println("Processed getFacilityResponse");
 			
 			facilities = client.getFacilities();
-			//Display facilities
-			System.out.println("Facility ID   |    Facility Name ");
-			for(int i = 0; i<facilities.size(); i++)
-				System.out.println(facilities.get(i).getId() + ":" + facilities.get(i).getName());
+			System.out.println("size of facilities: " + facilities.size());
 			
 			do {
 				console.displayMenu();
 				choice = sc.nextInt();
+				sc.nextLine();
 				String facilityName;
-				switch (choice) 
+				int facilityId;
+				Optional<Facility> facility;
+				switch (choice)
 				{
 					case 1: System.out.print("Enter facility name: ");
-							facilityName = sc.next();
+							facilityName = sc.nextLine();
+							facility = facilities.stream().filter(o -> o.getName().equals(facilityName)).findFirst();
+							facilityId = facility.get().getId();
 							System.out.print("Enter number of days (not more than 7) : ");
 							int length = sc.nextInt();
 							if (length > 7) {
@@ -70,31 +77,28 @@ public class Main {
 							List<Timestamp> listDays = new ArrayList<Timestamp>(length); 
 							for (int i=0; i<length; i++) {
 								System.out.print("Enter day "+ (i+1) + ": ");
-								String queryDay= sc.next().toUpperCase();
-								//listDays.add(DayOfWeek.valueOf(queryDay).getValue());
+								String queryDayOfWeek = sc.next().toUpperCase();
+								Timestamp day = TimestampGenerator.generateQueryDate(queryDayOfWeek);
+								listDays.add(day);
 							}
-							QueryFacilityRequest queryRequest = controller.generateQueryRequest(facilityName, listDays);
+							QueryFacilityRequest queryRequest = controller.generateQueryRequest(facilityId, listDays);
+							List<Timestamp> times = queryRequest.getDays();
+							//for(int i=0;i<times.size();i++)
+							//	System.out.println(times.get(i).toString());
 							request = controller.generateRequest(queryRequest, Type.QUERY_FACILITY);
 							client.sendRequest(request);
 							
-							client.processResponse(response);
-							
 							System.out.println("Querying for facility " + facilityName);
-							// Send this marshalledRequest via UDP to Server
-							client.sendQueryFacilityRequest(queryRequest);
 							
-							QueryFacilityResponse queryResponse = new QueryFacilityResponse();
+							response = client.receiveResponse();
+							client.processQueryFacilityResponse(response);
 							
-							// Receive response from Server
-							client.processQueryFacilityResponse(queryResponse);
 							break;
 							
 					case 2: System.out.print("Enter facility name: ");
-							facilityName = sc.next();
-							Facility facility;
-							int index = facilities.indexOf(facilityName);
-							facility =  facilities.get(index);
-							int facilityId = facility.getId();
+							facilityName = sc.nextLine();
+							facility = facilities.stream().filter(o -> o.getName().equals(facilityName)).findFirst();
+							facilityId = facility.get().getId();
 							System.out.print("Enter booking day: ");
 							String bookingDay = sc.next();
 							System.out.print("Enter start time for booking (HH:mm): ");
@@ -183,16 +187,16 @@ public class Main {
 							
 							Date bookingStartDate, bookingEndDate;
 							Timestamp startTimeStamp, endTimeStamp;
-							Calendar calendarBooking;
-							calendarBooking = Calendar.getInstance();
-							calendarBooking.set(Calendar.DAY_OF_MONTH, bookingDate);
-							calendarBooking.set(Calendar.MONTH, bookingMonth-1);
-							calendarBooking.set(Calendar.YEAR, bookingYear);
-							calendarBooking.set(Calendar.HOUR_OF_DAY, startTime.getHour());
-							calendarBooking.set(Calendar.MINUTE, startTime.getMinute());
-							calendarBooking.set(Calendar.SECOND, 0);
-							calendarBooking.set(Calendar.MILLISECOND, 0);
-							bookingStartDate = calendarBooking.getTime();
+							Calendar calendarBookingStart, calendarBookingEnd;
+							calendarBookingStart = Calendar.getInstance();
+							calendarBookingStart.set(Calendar.DAY_OF_MONTH, bookingDate);
+							calendarBookingStart.set(Calendar.MONTH, bookingMonth-1);
+							calendarBookingStart.set(Calendar.YEAR, bookingYear);
+							calendarBookingStart.set(Calendar.HOUR_OF_DAY, startTime.getHour());
+							calendarBookingStart.set(Calendar.MINUTE, startTime.getMinute());
+							calendarBookingStart.set(Calendar.SECOND, 0);
+							calendarBookingStart.set(Calendar.MILLISECOND, 0);
+							bookingStartDate = calendarBookingStart.getTime();
 							if (bookingDate == dateToday) {
 								LocalTime nowTime = LocalTime.now(); 
 								if (nowTime.compareTo(startTime) > 0 || nowTime.compareTo(endTime) > 0) {
@@ -202,50 +206,45 @@ public class Main {
 							}
 							startTimeStamp = new Timestamp(bookingStartDate.getTime());
 							
-							calendarBooking.set(Calendar.HOUR_OF_DAY, endTime.getHour());
-							calendarBooking.set(Calendar.MINUTE, endTime.getMinute());
-							bookingEndDate = calendarBooking.getTime();
+							calendarBookingEnd = Calendar.getInstance();
+							calendarBookingEnd.set(Calendar.DAY_OF_MONTH, bookingDate);
+							calendarBookingEnd.set(Calendar.MONTH, bookingMonth-1);
+							calendarBookingEnd.set(Calendar.YEAR, bookingYear);
+							calendarBookingEnd.set(Calendar.HOUR_OF_DAY, endTime.getHour());
+							calendarBookingEnd.set(Calendar.MINUTE, endTime.getMinute());
+							calendarBookingEnd.set(Calendar.SECOND, 0);
+							calendarBookingEnd.set(Calendar.MILLISECOND, 0);
+							
+							bookingEndDate = calendarBookingEnd.getTime();
 							endTimeStamp = new Timestamp(bookingEndDate.getTime());
 							
 							System.out.println("Start: " + startTimeStamp.toString());
 							System.out.println("End: " + endTimeStamp.toString());
+							
 							BookFacilityRequest bookingRequest = controller.generateBookingRequest(userId, facilityId, startTimeStamp, endTimeStamp );
 							request = controller.generateRequest(bookingRequest, Type.BOOK_FACILITY);
 							client.sendRequest(request);
-							
-							client.processResponse(response);
-							
 							System.out.println("Booking facility " + facilityName + " on " + bookingDay + ", " + bookingDate +"/" + bookingMonth + "/" + bookingYear +  " from " + start + " to " + end);
-							// Send this marshalledRequest via UDP to Server
-							client.sendBookFacilityRequest(bookingRequest);
-							
-							BookFacilityResponse bookingResponse = new BookFacilityResponse();
-							
-							// Receive response from Server
-							client.processBookFacilityResponse(bookingResponse);
-							
+							response = client.receiveResponse();
+							client.processBookFacilityResponse(response);
 							break;
 							
-					case 3: System.out.print("Enter booking name: ");
+					case 3: System.out.print("Enter your booking ID: ");
 							int bookingId = sc.nextInt();
 							System.out.print("Enter offset for change (in minutes): ");
 							int offset = sc.nextInt();
-							
-							ChangeBookingRequest changeRequest = controller.generateChangeRequest(bookingId, offset);
-							request = controller.generateRequest(changeRequest, Type.BOOK_FACILITY);
-							client.sendRequest(request);
-							
-							client.processResponse(response);
-							
-							System.out.println("Changing booking " + bookingId + " by " + offset + " minutes");
-							// Send this marshalledRequest via UDP to Server
-							client.sendChangeBookingRequest(changeRequest);
-							
-							ChangeBookingResponse changeResponse = new ChangeBookingResponse();
-							
-							// Receive response from Server
-							client.processChangeBookingResponse(changeResponse);
-							
+							if (( Math.abs(offset) % 30) == 0) {
+								ChangeBookingRequest changeRequest = controller.generateChangeRequest(bookingId, offset);
+								request = controller.generateRequest(changeRequest, Type.CHANGE_BOOKING);
+								client.sendRequest(request);
+								System.out.println("Changing booking " + bookingId + " by " + offset + " minutes");
+								response = client.receiveResponse();
+								client.processChangeBookingResponse(response);
+							}
+							else {
+								System.err.println("Time slots for 30 minutes intervals. Please provide valid inputs.");
+								System.exit(-1);
+							}
 							break;
 							
 					case 4: System.out.print("Enter facility name: ");
@@ -260,10 +259,32 @@ public class Main {
 							System.out.println("Monitoring facility " + facilityName + " on " + monitorDay + " from " + monitorsStartTime + " to " + monitorEndTime);						
 							break;
 							
-					case 5: System.out.println("Call an idempotent service");
+					case 5: System.out.print("Enter UserID to transfer booking to: ");
+							String transferUserId = sc.next();
+							System.out.print("Enter your booking ID: ");
+							bookingId = sc.nextInt();
+							
+							TransferBookingRequest transferRequest = controller.generateTransferRequest(transferUserId, bookingId);
+							request = controller.generateRequest(transferRequest, Type.TRANSFER_BOOKING);
+							client.sendRequest(request);
+							//System.out.println("Changing booking " + bookingId + " by " + offset + " minutes");
+							response = client.receiveResponse();
+							client.processTransferBookingResponse(response);
 							break;
 							
-					case 6: System.out.println("Call an non-idempotent service");
+					case 6: System.out.println("Modify Booking duration");
+							System.out.print("Enter your booking ID: ");
+							bookingId = sc.nextInt();
+							System.out.print("Enter time to increase/decrease duration (in minutes): ");
+							int changeDurationAmount = sc.nextInt();
+							
+							ModifyDurationRequest modifyRequest = controller.generateModifyRequest(bookingId, changeDurationAmount);
+							request = controller.generateRequest(modifyRequest, Type.MODIFY_DURATION);
+							client.sendRequest(request);
+							//System.out.println("Changing booking " + bookingId + " by " + offset + " minutes");
+							response = client.receiveResponse();
+							client.processModifyBookingResponse(response);
+							
 							break;
 							
 					case 7: System.out.println("Exiting client application");
