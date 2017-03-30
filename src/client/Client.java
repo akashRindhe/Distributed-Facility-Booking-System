@@ -74,8 +74,8 @@ public class Client {
 		return response;
 	}
 	
-	public void processGetFacilitiesResponse(Response response) 
-			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+	public void processGetFacilitiesResponse(Response response) {
+		
 		if (response.getIsError() == 1) {
 			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
 		} 
@@ -91,8 +91,7 @@ public class Client {
 				System.out.println(facilities.get(i).getId() + "  |      " + facilities.get(i).getName());
 		}
 	}
-	public void processQueryFacilityResponse(Response response) 
-			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+	public void processQueryFacilityResponse(Response response) {
 		
 		if (response.getIsError() == 1) {
 			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
@@ -109,8 +108,7 @@ public class Client {
 		}
 	}
 	
-	public void processBookFacilityResponse(Response response) 
-			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+	public void processBookFacilityResponse(Response response) {
 		
 		if (response.getIsError() == 1) {
 			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
@@ -122,8 +120,8 @@ public class Client {
 		}
 	}
 	
-	public void processChangeBookingResponse(Response response) 
-			throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+	public void processChangeBookingResponse(Response response) {
+		
 		if (response.getIsError() == 1) {
 			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
 		}
@@ -135,6 +133,7 @@ public class Client {
 	}
 
 	public void processTransferBookingResponse(Response response) {
+		
 		if (response.getIsError() == 1) {
 			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
 		}
@@ -146,6 +145,7 @@ public class Client {
 	}
 
 	public void processModifyDurationResponse(Response response) {
+		
 		if (response.getIsError() == 1) {
 			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
 		}
