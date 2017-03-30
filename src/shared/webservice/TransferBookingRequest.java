@@ -4,7 +4,7 @@ import shared.Marshallable;
 
 public class TransferBookingRequest implements Marshallable {
 	private int bookingId;
-	private int newUserId;
+	private String newUserId;
 	
 	public int getBookingId() {
 		return bookingId;
@@ -14,11 +14,11 @@ public class TransferBookingRequest implements Marshallable {
 		this.bookingId = bookingId;
 	}
 
-	public int getNewUserId() {
+	public String getNewUserId() {
 		return newUserId;
 	}
 	
-	public void setNewUserId(int newUserId) {
+	public void setNewUserId(String newUserId) {
 		this.newUserId = newUserId;
 	}
 }

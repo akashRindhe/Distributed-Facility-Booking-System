@@ -73,7 +73,7 @@ public class CallbackFilter implements Filter {
 	private static QueryFacilityRequest createQueryFacilityRequest(int facilityId) {
 		QueryFacilityRequest req = new QueryFacilityRequest();
 		Facility facility = DatabaseAccess.fetchFacilityById(facilityId);
-		req.setFacilityName(facility.getName());
+		req.setFacilityId(facility.getId());
 		Calendar cal = Calendar.getInstance();
 		List<Timestamp> timeList = new LinkedList<>();
 		for (int i = 0; i < 7; i++) {

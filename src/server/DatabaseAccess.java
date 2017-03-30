@@ -181,13 +181,14 @@ public class DatabaseAccess {
 		return bookings;
 	}
 	
-	public static List<Booking> fetchBookings(String name, Date date)
+	public static List<Booking> fetchBookings(int id, Date date)
 	{
 		List<Booking> bookings = new ArrayList<Booking>();
 		try {
 			Connection connection = connectToDB();
 			Statement stmt = connection.createStatement();
-			String sql = "SELECT * FROM Booking WHERE name = '" + name + "' AND DATE(bookingStart) = " + date + " ORDER BY bookingStart";
+			String sql = "SELECT * FROM Booking WHERE facilityId = " + id + " AND DATE(bookingStart) = '" + date + "' ORDER BY bookingStart";
+			System.out.println(sql);
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next())
 			{
@@ -210,17 +211,21 @@ public class DatabaseAccess {
 		return bookings;
 	}
 	
-	public static List<Booking> fetchBookings(int id, Timestamp start, Timestamp end)
+	public static List<Booking> fetchBookings(int facilityId, Timestamp start, Timestamp end)
 	{
 		List<Booking> bookings = new ArrayList<Booking>();
 		try {
 			Connection connection = connectToDB();
 			Statement stmt = connection.createStatement();
 			String sql = "SELECT * FROM Booking WHERE "
-					+ "id = " + id + " AND ("
-					+ "bookingStart <= '" + start + "' AND  bookingEnd >= '" + start
+					+ "facilityId = " + facilityId + " AND ("
+					+ "bookingStart < '" + start + "' AND  bookingEnd > '" + start
 					+ "') OR ("
-					+ "bookingStart <= '" + end + "' AND  bookingEnd >= '" + end + "')";
+					+ "bookingStart < '" + end + "' AND  bookingEnd > '" + end
+					+ "') OR ("
+					+ "bookingStart >'" + start + "' AND bookingEnd < '" + end
+					+ "') OR (bookingStart = '" + start + "') OR (bookingEnd = '"
+					+ end + "')";
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next())
 			{
@@ -318,12 +323,12 @@ public class DatabaseAccess {
 		}
 	}
 	
-	public static void changeBookingUserId(int bookingId, int newUserId) {
+	public static void changeBookingUserId(int bookingId, String newUserId) {
 		try {
 			Connection connection = connectToDB();
 			String sql = "UPDATE Booking SET userId = ? WHERE id = ?";
 			PreparedStatement preparedStmt = connection.prepareStatement(sql); 
-			preparedStmt.setInt(1, newUserId);
+			preparedStmt.setString(1, newUserId);
 			preparedStmt.setInt(2, bookingId);
 			
 			preparedStmt.execute();

@@ -62,7 +62,7 @@ public class Controller {
 		while (iter.hasNext()) {
 			List<Booking> temp = 
 					DatabaseAccess.fetchBookings(
-							data.getFacilityName(), 
+							data.getFacilityId(), 
 							new Date(iter.next().getTime()));
 			bookingList.addAll(temp);
 		}
@@ -99,6 +99,8 @@ public class Controller {
 						data.getConfirmationId());
 		Timestamp bookStart = new Timestamp(booking.getBookingStart().getTime() + data.getOffset()*60*1000); 
 		Timestamp bookEnd   = new Timestamp(booking.getBookingEnd().getTime() + data.getOffset()*60*1000);
+		System.out.println(bookStart.toString());
+		System.out.println(bookEnd.toString());
 		return changeBooking(booking, bookStart, bookEnd);
 	}
 	
