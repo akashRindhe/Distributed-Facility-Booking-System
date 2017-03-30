@@ -60,7 +60,7 @@ public class Controller {
 							new Date(iter.next().getTime()));
 			bookingList.addAll(temp);
 		}
-		
+		//Need to check if Facility Name exists or not
 		QueryFacilityResponse responseData = new QueryFacilityResponse();
 		responseData.setBookings(bookingList);
 		Response response = new Response(responseData);
