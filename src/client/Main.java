@@ -5,7 +5,12 @@ import client.utility.TimestampGenerator;
 
 import java.net.InetAddress;
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
@@ -68,12 +73,12 @@ public class Main {
 							for (int i=0; i<length; i++) {
 								System.out.print("Enter day "+ (i+1) + ": ");
 								String queryDayOfWeek = sc.next().toUpperCase();
-								Timestamp day = TimestampGenerator.generateQueryDate(queryDayOfWeek);
+								Timestamp day = TimestampGenerator.generateDate(queryDayOfWeek);
+								System.out.println(day.toString());
 								listDays.add(day);
 							}
 							
 							QueryFacilityRequest queryRequest = controller.generateQueryRequest(facilityId, listDays);
-							List<Timestamp> times = queryRequest.getDays();
 							request = controller.generateRequest(queryRequest, Type.QUERY_FACILITY);
 							client.sendRequest(request);
 							System.out.println("Querying for facility " + facilityName);
@@ -123,15 +128,27 @@ public class Main {
 							break;
 							
 					case 4: System.out.print("Enter facility name: ");
-							facilityName = sc.next();
-							System.out.print("Enter day to monitor: ");
-							String monitorDay = sc.next();
-							System.out.print("Enter start time for monitoring: ");
-							String monitorsStartTime = sc.next();
-							System.out.print("Enter end time for monitoring: ");
-							String monitorEndTime = sc.next();
-							//Generate MonitorFacility request object
-							System.out.println("Monitoring facility " + facilityName + " on " + monitorDay + " from " + monitorsStartTime + " to " + monitorEndTime);						
+							facilityName = sc.nextLine();
+							facility = facilities.stream().filter(o -> o.getName().equals(facilityName)).findFirst();
+							facilityId = facility.get().getId();
+							System.out.print("Enter amount of time (in minutes) to monitor the facility: ");
+							int monitorInterval = sc.nextInt();
+							Date todayDate = new java.util.Date();
+							Calendar calendarToday = Calendar.getInstance();
+							calendarToday.setTime(todayDate);
+							int dayOfWeekToday = calendarToday.get(Calendar.DAY_OF_WEEK);
+							DayOfWeek dayOfWeek = DayOfWeek.of(dayOfWeekToday-1);
+							System.out.println(dayOfWeek.toString());
+							Timestamp monitorStart = TimestampGenerator.generateDateWithTime(dayOfWeek.toString(), calendarToday.getTime().getHours(), calendarToday.getTime().getMinutes(), 0);
+							Timestamp monitorEnd = TimestampGenerator.generateDateWithTime((dayOfWeek.toString()), calendarToday.getTime().getHours(), calendarToday.getTime().getMinutes()+monitorInterval, 0);
+							
+							CallbackRequest monitorRequest = controller.generateCallbackRequest(facilityId, monitorStart, monitorEnd);
+							request = controller.generateRequest(monitorRequest, Type.CALLBACK);
+							client.sendRequest(request);
+							System.out.println("Monitorig facility " + facilityName);
+							response = client.receiveResponse();
+							client.processCallbackResponse(response, monitorEnd);
+							System.out.println("Monitoring facility " + facilityName);						
 							break;
 							
 					case 5: System.out.print("Enter UserID to transfer booking to: ");

@@ -78,7 +78,7 @@ public class TimestampGenerator {
 	 * @param dayOfWeek
 	 * @return Timestamp containg Date for the dayOfWeek within 7 days from today
 	 */
-	public static Timestamp generateQueryDate(String dayOfWeek) {
+	public static Timestamp generateDate(String dayOfWeek) {
 		int dayOfMonthFinal, monthFinal, yearFinal;
 		int dayOfMonthToday, monthToday, yearToday, dayOfWeekToday, offsetDays;
 		
@@ -109,6 +109,41 @@ public class TimestampGenerator {
 			yearFinal += 1;
 		
 		Date dateFinal = TimestampGenerator.getDateFinal(dayOfMonthFinal, monthFinal-1, yearFinal, 0, 0);
+		Timestamp timestamp = new Timestamp(dateFinal.getTime());
+		return timestamp;
+	}
+	
+	public static Timestamp generateDateWithTime(String dayOfWeek, int hour, int minutes, int seconds) {
+		int dayOfMonthFinal, monthFinal, yearFinal;
+		int dayOfMonthToday, monthToday, yearToday, dayOfWeekToday, offsetDays;
+		
+		dayOfWeek = dayOfWeek.toUpperCase();
+		Date todayDate = new java.util.Date();
+		Calendar calendarToday = Calendar.getInstance();
+		calendarToday.setTime(todayDate);
+		
+		dayOfMonthToday = calendarToday.get(Calendar.DAY_OF_MONTH);
+		monthToday = calendarToday.get(Calendar.MONTH) + 1;
+		yearToday = calendarToday.get(Calendar.YEAR);
+		dayOfWeekToday = calendarToday.get(Calendar.DAY_OF_WEEK);
+		
+		dayOfMonthFinal = dayOfMonthToday;
+		monthFinal = monthToday;
+		yearFinal = yearToday;
+		offsetDays = DayOfWeek.valueOf(dayOfWeek).getValue() - dayOfWeekToday;
+		
+		if (offsetDays < 0)
+			offsetDays = 7 + offsetDays;
+		
+		dayOfMonthFinal = TimestampGenerator.getBookingDayOfMonth(dayOfMonthToday, monthToday, yearToday, offsetDays);
+		
+		if (dayOfMonthFinal < dayOfMonthToday) 
+			monthFinal += 1;
+			
+		if (calendarToday.get(Calendar.DAY_OF_YEAR) == TimestampGenerator.getDaysInYear(yearToday) && dayOfMonthFinal != dayOfMonthToday)
+			yearFinal += 1;
+		
+		Date dateFinal = TimestampGenerator.getDateFinal(dayOfMonthFinal, monthFinal-1, yearFinal, hour, minutes);
 		Timestamp timestamp = new Timestamp(dateFinal.getTime());
 		return timestamp;
 	}
@@ -184,7 +219,7 @@ public class TimestampGenerator {
 	}
 	
 	public static void main(String[] args) throws NullPointerException {
-		Timestamp t1 = TimestampGenerator.generateQueryDate("Thursday");
+		Timestamp t1 = TimestampGenerator.generateDate("Thursday");
 		System.out.println(t1.toString());
 		System.out.print("Enter booking day: ");
 		Scanner sc = new Scanner(System.in);

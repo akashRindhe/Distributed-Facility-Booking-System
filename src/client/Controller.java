@@ -8,10 +8,11 @@ import java.sql.Timestamp;
 import java.util.List;
 
 public class Controller {
-	
+	private static int requestId = 0;
 	public Request generateRequest(Marshallable marshallable, int type) {
 		Request request = new Request();
-		request.setRequestId("0001");
+		requestId++;
+		request.setRequestId(Integer.toString(requestId));
 		request.setRequestType(type);
 		request.setRequestData(marshallable);
 		return request;
@@ -70,6 +71,16 @@ public class Controller {
 		request.setOffset(changeDurationAmount);
 		return request;
 		
+	}
+
+	public CallbackRequest generateCallbackRequest(int facilityId,
+			Timestamp monitorStart, Timestamp monitorEnd) {
+		
+		CallbackRequest request = new CallbackRequest();
+		request.setFacilityId(facilityId);
+		request.setMonitorStart(monitorStart);
+		request.setMonitorEnd(monitorEnd);
+		return request;
 	}
 
 }
