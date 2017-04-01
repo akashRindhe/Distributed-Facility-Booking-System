@@ -36,11 +36,27 @@ public class CallbackFilter implements Filter {
 				list.add(wrapper);
 				map.put(wrapper.requestData.getFacilityId(), list);
 			}
+			System.out.println("Added client " + packet.getAddress().getHostAddress()
+					+ ":" + packet.getPort()
+					+ " as monitor for facility "
+					+ wrapper.requestData.getFacilityId());
 		}
 		return true;
 	}
 
-	public static void broadcastUpdate(int facilityId) {
+	public static void broadcastUpdate(final int facilityId) {
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				_broadcastUpdate(facilityId);
+			}
+		}).start();
+	}
+	
+	private static void _broadcastUpdate(int facilityId) {
+		System.out.println("Broadcasting updates for facility: " + facilityId);
 		Request request = new Request();
 		request.setRequestType(Type.QUERY_FACILITY);
 		request.setRequestData(createQueryFacilityRequest(facilityId));
@@ -51,9 +67,14 @@ public class CallbackFilter implements Filter {
 			while(iter.hasNext()) {
 				MonitorWrapper wrapper = iter.next();
 				Timestamp current = new Timestamp(System.currentTimeMillis());
-				if (current.compareTo(wrapper.requestData.getMonitorStart()) > 0
-						&& current.compareTo(wrapper.requestData.getMonitorEnd()) < 0) {
+				System.out.println("time now: " + current.toString() + " mtr start: "
+						+ wrapper.requestData.getMonitorStart() + " mtr end: "
+						+ wrapper.requestData.getMonitorEnd());
+				if (current.compareTo(wrapper.requestData.getMonitorStart()) >= 0
+						&& current.compareTo(wrapper.requestData.getMonitorEnd()) <= 0) {
 					try {
+						System.out.println("Sending update to client: "
+								+ wrapper.clientPacket.getAddress().getHostAddress());
 						Server
 							.getInstance()
 							.sendResponse(

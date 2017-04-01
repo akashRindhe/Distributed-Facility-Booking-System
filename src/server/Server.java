@@ -38,13 +38,12 @@ public class Server {
 	
 	public void start() throws IOException, ClassNotFoundException {
 		socket = new DatagramSocket(port);
-		byte[] buf = new byte[1024];
-		DatagramPacket packet = new DatagramPacket(buf, buf.length);
-		
 		System.out.println("Server started on port " + port);
 		while (true) {
 			try {
 				System.out.println("Waiting to receive packet");
+				byte[] buf = new byte[1024];
+				DatagramPacket packet = new DatagramPacket(buf, buf.length);
 				socket.receive(packet);
 				Request request =
 						MarshallingService
@@ -91,7 +90,7 @@ public class Server {
 		DatagramPacket packet = 
 				new DatagramPacket(buf, buf.length, address, port);
 		socket.send(packet);
-		System.out.println("Response sent");
+		System.out.println("Response sent to " + address.getHostAddress() + ":" + port);
 	}
 	
 	public History getHistory() {

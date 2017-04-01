@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import server.filter.CallbackFilter;
 import shared.model.Booking;
 import shared.webservice.BookFacilityRequest;
 import shared.webservice.BookFacilityResponse;
@@ -88,7 +89,8 @@ public class Controller {
 		}
 		
 		BookFacilityResponse responseData = new BookFacilityResponse();
-		responseData.setConfirmationId(DatabaseAccess.addBooking(data.getBooking()));	
+		responseData.setConfirmationId(DatabaseAccess.addBooking(data.getBooking()));
+		CallbackFilter.broadcastUpdate(data.getBooking().getFacilityId());
 		return new Response(responseData);
 	}
 	
@@ -100,8 +102,6 @@ public class Controller {
 						data.getConfirmationId());
 		Timestamp bookStart = new Timestamp(booking.getBookingStart().getTime() + data.getOffset()*60*1000); 
 		Timestamp bookEnd   = new Timestamp(booking.getBookingEnd().getTime() + data.getOffset()*60*1000);
-		System.out.println(bookStart.toString());
-		System.out.println(bookEnd.toString());
 		return changeBooking(booking, bookStart, bookEnd);
 	}
 	
@@ -124,6 +124,7 @@ public class Controller {
 		ChangeBookingResponse responseData = new ChangeBookingResponse();
 		DatabaseAccess.changeBooking(booking);
 		responseData.setAcknowledgement("Your booking has been successfully altered in the system");
+		CallbackFilter.broadcastUpdate(booking.getFacilityId());
 		return new Response(responseData);
 	}
 
@@ -135,6 +136,8 @@ public class Controller {
 					data.getBookingId(), data.getNewUserId());
 		TransferBookingResponse responseData = new TransferBookingResponse();
 		responseData.setAcknowledgement("Booking transferred successfully");
+		Booking booking = DatabaseAccess.fetchBookingById(data.getBookingId());
+		CallbackFilter.broadcastUpdate(booking.getFacilityId());
 		return new Response(responseData);
 	}
 	
