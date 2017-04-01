@@ -1,12 +1,13 @@
 package shared.webservice;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import shared.Marshallable;
 import shared.model.Booking;
 
 public class QueryFacilityResponse implements Marshallable {
-	private List<Booking> bookings;
+	private List<Booking> bookings = new ArrayList<Booking>();
 
 	public List<Booking> getBookings() {
 		return bookings;
