@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Scanner;
 
 import shared.DayOfWeek;
 
@@ -216,26 +215,5 @@ public class TimestampGenerator {
 		bookingTimeStamps.add(timestampStart);
 		bookingTimeStamps.add(timestampEnd);
 		return bookingTimeStamps;
-	}
-	
-	public static void main(String[] args) throws NullPointerException {
-		Timestamp t1 = TimestampGenerator.generateDate("Thursday");
-		System.out.println(t1.toString());
-		System.out.print("Enter booking day: ");
-		Scanner sc = new Scanner(System.in);
-		String bookingDay = sc.next();
-		System.out.print("Enter start time for booking (HH:mm): ");
-		String start = sc.next();
-		System.out.print("Enter end time for booking (HH:mm): ");
-		String end = sc.next();
-		try {
-			List<Timestamp> tS = TimestampGenerator.generateBookingTimestamp(bookingDay, start, end);
-			System.out.println("Start: " + tS.get(0));
-			System.out.println("End: " + tS.get(1));
-		}
-		catch (NullPointerException e) {
-			e.printStackTrace();
-		}
-		
 	}
 }

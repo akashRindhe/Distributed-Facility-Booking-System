@@ -6,15 +6,14 @@ import shared.webservice.*;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.UUID;
 
 public class Controller {
-	private static int requestId = 1;
 	public Request generateRequest(Marshallable marshallable, int type) {
 		Request request = new Request();
-		request.setRequestId(Integer.toString(requestId));
+		request.setRequestId(UUID.randomUUID().toString());
 		request.setRequestType(type);
 		request.setRequestData(marshallable);
-		requestId++;
 		return request;
 	}
 	

@@ -122,7 +122,7 @@ public class Main {
 					case 4: System.out.print("Enter facility name: ");
 							facilityName = sc.nextLine();
 							facility = facilities.stream().filter(o -> o.getName().equals(facilityName)).findFirst();
-							facilityId = 1;
+							facilityId = facility.get().getId();
 							System.out.print("Enter amount of time (in minutes) to monitor the facility: ");
 							int monitorInterval = sc.nextInt();
 							Timestamp monitorStart = new Timestamp(System.currentTimeMillis());
