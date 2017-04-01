@@ -89,10 +89,29 @@ public class Client {
 	 * @throws IllegalAccessException
 	 * @throws IOException
 	 */
-	public void sendRequest(Request request) throws IllegalArgumentException, IllegalAccessException, IOException {
+	public Response sendRequest(Request request) throws IllegalArgumentException, IllegalAccessException, IOException {
+		return _sendRequest(request, 0);
+	}
+	
+	private Response _sendRequest(Request request, int attempt) {
 		byte[] buf = marshallingService.marshal(request);
 		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
 		socket.send(sendPacket);
+		
+		Response response = null;
+		try {
+			socket.setSoTimeout(TIMEOUT);
+			response = receiveResponse();
+		} catch (SocketTimeoutException e) {
+			if (attempt == MAX_RETRY - 1) {
+				throw e;
+			}
+			System.out.println("Request timeout. Retrying...");
+			_sendRequest(request, ++attempt);
+		} finally {
+			socket.setSoTimeout(0);
+		}
+		return response;
 	}
 	
 	/**
@@ -105,29 +124,17 @@ public class Client {
 	 * @throws ClassNotFoundException
 	 */
 	public Response receiveResponse() throws IllegalArgumentException, IllegalAccessException, IOException, InstantiationException, ClassNotFoundException {
-		DatagramPacket receivePacket = doReceiveWithTimeout();
+		byte[] buf = new byte[10000];
+		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
+		socket.receive(receivePacket);
 		System.out.println("receivePacket length:" +receivePacket.getLength());
 		Response response = marshallingService.unmarshal(receivePacket.getData(), Response.class);
 		return response;
 	}
 	
 	private DatagramPacket doReceiveWithTimeout() {
-		byte[] buf = new byte[10000];
-		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 		
-		for (int i = 0; i < MAX_RETRY; i++) {
-			try {
-				socket.setSoTimeout(TIMEOUT);
-				socket.receive(receivePacket);
-			} catch (SocketTimeoutException e) {
-				if (i == MAX_RETRY - 1) {
-					throw e;
-				}
-				System.out.println("Request timeout. Retrying...");
-			} finally {
-				socket.setSoTimeout(0);
-			}
-		}
+		
 		return receivePacket;
 	}
 	
