@@ -5,5 +5,6 @@ TODO: <br/>
 Add `doesFacilityExist(String facilityName)` in `DatabaseAccess` <br/>
 Change every function to check user input on server side and throw relevant error messages to client <br/>
 Change queryFacility to show available timings <br/>
-Add documentation to code
+Add documentation to code <br.>
+Change facilityId inputs to facilityName
 Complete Report <br/>
