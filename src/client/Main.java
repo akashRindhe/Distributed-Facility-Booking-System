@@ -31,6 +31,9 @@ public class Main {
 		String ip = (String) optSet.valueOf("ip");
 		int serverPort = (int) optSet.valueOf("serverPort");
 		String userId = (String) optSet.valueOf("userId");
+		int maxAttempts = 100;
+		if (optSet.has("maxRetries"))
+			maxAttempts = (int) optSet.valueOf("maxRetries");
 		final Client client = new Client(clientPort, serverPort, InetAddress.getByName(ip));
 		System.out.println("Client launched!");
 		List<Facility> facilities = new ArrayList<Facility>();
@@ -80,9 +83,8 @@ public class Main {
 							
 							QueryFacilityRequest queryRequest = controller.generateQueryRequest(facilityId, listDays);
 							request = controller.generateRequest(queryRequest, Type.QUERY_FACILITY);
-							client.sendRequest(request);
 							System.out.println("Querying for facility " + facilityName);
-							response = client.receiveResponse();
+							response = client.sendRequest(request);
 							client.processQueryFacilityResponse(response);
 							
 							break;
@@ -103,9 +105,8 @@ public class Main {
 							
 							BookFacilityRequest bookingRequest = controller.generateBookingRequest(userId, facilityId, bookingTimestamp.get(0), bookingTimestamp.get(1) );
 							request = controller.generateRequest(bookingRequest, Type.BOOK_FACILITY);
-							client.sendRequest(request);
 							System.out.println("Booking facility " + facilityName + " on " + bookingDay + " from " + start + " to " + end);
-							response = client.receiveResponse();
+							response = client.sendRequest(request);
 							client.processBookFacilityResponse(response);
 							break;
 							
@@ -116,9 +117,8 @@ public class Main {
 							if (( Math.abs(offset) % 30) == 0) {
 								ChangeBookingRequest changeRequest = controller.generateChangeRequest(bookingId, offset);
 								request = controller.generateRequest(changeRequest, Type.CHANGE_BOOKING);
-								client.sendRequest(request);
 								System.out.println("Changing booking " + bookingId + " by " + offset + " minutes");
-								response = client.receiveResponse();
+								response = client.sendRequest(request);
 								client.processChangeBookingResponse(response);
 							}
 							else {
@@ -138,16 +138,16 @@ public class Main {
 							calendarToday.setTime(todayDate);
 							int dayOfWeekToday = calendarToday.get(Calendar.DAY_OF_WEEK);
 							DayOfWeek dayOfWeek = DayOfWeek.of(dayOfWeekToday-1);
-							System.out.println(dayOfWeek.toString());
 							Timestamp monitorStart = TimestampGenerator.generateDateWithTime(dayOfWeek.toString(), calendarToday.getTime().getHours(), calendarToday.getTime().getMinutes(), 0);
 							Timestamp monitorEnd = TimestampGenerator.generateDateWithTime((dayOfWeek.toString()), calendarToday.getTime().getHours(), calendarToday.getTime().getMinutes()+monitorInterval, 0);
 							
+							System.out.println("Start :" + monitorStart);
+							System.out.println("End :" + monitorEnd);
 							CallbackRequest monitorRequest = controller.generateCallbackRequest(facilityId, monitorStart, monitorEnd);
 							request = controller.generateRequest(monitorRequest, Type.CALLBACK);
-							client.sendRequest(request);
-							System.out.println("Monitorig facility " + facilityName);
-							response = client.receiveResponse();
-							client.processCallbackResponse(response, monitorEnd);
+							System.out.println("Monitoring facility " + facilityName);
+							response = client.sendRequest(request);
+							client.processCallbackResponse(response, monitorEnd, monitorInterval);
 							System.out.println("Monitoring facility " + facilityName);						
 							break;
 							
@@ -158,9 +158,8 @@ public class Main {
 							
 							TransferBookingRequest transferRequest = controller.generateTransferRequest(transferUserId, bookingId);
 							request = controller.generateRequest(transferRequest, Type.TRANSFER_BOOKING);
-							client.sendRequest(request);
 							System.out.println("Transferring booking " + bookingId + " to " + transferUserId);
-							response = client.receiveResponse();
+							response = client.sendRequest(request);
 							client.processTransferBookingResponse(response);
 							break;
 							
@@ -172,9 +171,8 @@ public class Main {
 							
 							ModifyDurationRequest modifyRequest = controller.generateModifyRequest(bookingId, offset);
 							request = controller.generateRequest(modifyRequest, Type.MODIFY_DURATION);
-							client.sendRequest(request);
 							System.out.println("Modify the duration of booking " + bookingId + " by " + offset);
-							response = client.receiveResponse();
+							response = client.sendRequest(request);
 							client.processModifyDurationResponse(response);
 							
 							break;
