@@ -8,13 +8,13 @@ import java.sql.Timestamp;
 import java.util.List;
 
 public class Controller {
-	private static int requestId = 0;
+	private static int requestId = 1;
 	public Request generateRequest(Marshallable marshallable, int type) {
 		Request request = new Request();
-		requestId++;
 		request.setRequestId(Integer.toString(requestId));
 		request.setRequestType(type);
 		request.setRequestData(marshallable);
+		requestId++;
 		return request;
 	}
 	

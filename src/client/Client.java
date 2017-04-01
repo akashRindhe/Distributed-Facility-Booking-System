@@ -231,7 +231,7 @@ public class Client {
 		}
 	}
 
-	public void processCallbackResponse(Response response, Timestamp end) throws IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException, IOException {
+	public void processCallbackResponse(Response response, Timestamp end, int monitorInterval) throws IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException, IOException {
 
 		if (response.getIsError() == 1) {
 			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
@@ -240,13 +240,20 @@ public class Client {
 			CallbackResponse monitorResponse = (CallbackResponse) response.getData();
 			String ack = monitorResponse.getAcknowledgement();
 			System.out.println("Server acknowledgement :" + ack);
-			processCallbackUpdateResponse(end);
+			processCallbackUpdateResponse(end, monitorInterval);
 		}
 		
 	}
 
-	private void processCallbackUpdateResponse(Timestamp end) throws IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException, IOException {
+	private void processCallbackUpdateResponse(Timestamp end, int monitorInterval) throws IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException, IOException {
+		
+		System.out.println("Monitor interval in ms: " + monitorInterval*60*1000);
+		System.out.println("Current time interval in ms: "+ (int) System.currentTimeMillis());
+		int timeout = (int) (monitorInterval*60*1000 - System.currentTimeMillis());
+		System.out.println("Timeout :" + timeout);
+		socket.setSoTimeout(timeout);
 		while(LocalDateTime.now().compareTo(end.toLocalDateTime()) < 0 ) {
+			try { 
 			Response response = receiveResponse();
 			CallbackUpdateResponse monitorUpdateResponse = (CallbackUpdateResponse) response.getData();
 			List<Booking> bookings = monitorUpdateResponse.getBookingList();
@@ -255,7 +262,14 @@ public class Client {
 			System.out.println("------------------------------------------------------------");
 			for(int i = 0; i<bookings.size(); i++)
 				System.out.println(bookings.get(i).getId() + "        |" + bookings.get(i).getFacilityId()+  "|" +bookings.get(i).getUserId() +  "|" +bookings.get(i).getBookingStart().toString() + "|" +bookings.get(i).getBookingEnd().toString() );				
+		
+			} catch (SocketTimeoutException e) {
+				System.out.println("Monitor interval expired!");
+			} finally {
+				socket.setSoTimeout(0);
+			}
 		}
+		System.out.println("Monitor interval expired!");
 		
 		
 	}

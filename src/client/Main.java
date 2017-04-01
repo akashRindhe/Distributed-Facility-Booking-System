@@ -5,12 +5,7 @@ import client.utility.TimestampGenerator;
 
 import java.net.InetAddress;
 import java.sql.Timestamp;
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
@@ -31,9 +26,6 @@ public class Main {
 		String ip = (String) optSet.valueOf("ip");
 		int serverPort = (int) optSet.valueOf("serverPort");
 		String userId = (String) optSet.valueOf("userId");
-		int maxAttempts = 100;
-		if (optSet.has("maxRetries"))
-			maxAttempts = (int) optSet.valueOf("maxRetries");
 		final Client client = new Client(clientPort, serverPort, InetAddress.getByName(ip));
 		System.out.println("Client launched!");
 		List<Facility> facilities = new ArrayList<Facility>();
@@ -130,24 +122,18 @@ public class Main {
 					case 4: System.out.print("Enter facility name: ");
 							facilityName = sc.nextLine();
 							facility = facilities.stream().filter(o -> o.getName().equals(facilityName)).findFirst();
-							facilityId = facility.get().getId();
+							facilityId = 1;
 							System.out.print("Enter amount of time (in minutes) to monitor the facility: ");
 							int monitorInterval = sc.nextInt();
-							Date todayDate = new java.util.Date();
-							Calendar calendarToday = Calendar.getInstance();
-							calendarToday.setTime(todayDate);
-							int dayOfWeekToday = calendarToday.get(Calendar.DAY_OF_WEEK);
-							DayOfWeek dayOfWeek = DayOfWeek.of(dayOfWeekToday-1);
-							Timestamp monitorStart = TimestampGenerator.generateDateWithTime(dayOfWeek.toString(), calendarToday.getTime().getHours(), calendarToday.getTime().getMinutes(), 0);
-							Timestamp monitorEnd = TimestampGenerator.generateDateWithTime((dayOfWeek.toString()), calendarToday.getTime().getHours(), calendarToday.getTime().getMinutes()+monitorInterval, 0);
-							
-							System.out.println("Start :" + monitorStart);
-							System.out.println("End :" + monitorEnd);
+							Timestamp monitorStart = new Timestamp(System.currentTimeMillis());
+							Timestamp monitorEnd = new Timestamp (System.currentTimeMillis()+monitorInterval*60*1000);
+							System.out.println("Start :" + monitorStart.toString());
+							System.out.println("End :" + monitorEnd.toString());
 							CallbackRequest monitorRequest = controller.generateCallbackRequest(facilityId, monitorStart, monitorEnd);
 							request = controller.generateRequest(monitorRequest, Type.CALLBACK);
 							System.out.println("Monitoring facility " + facilityName);
 							response = client.sendRequest(request);
-							client.processCallbackResponse(response, monitorEnd);
+							client.processCallbackResponse(response, monitorEnd, monitorInterval);
 							System.out.println("Monitoring facility " + facilityName);						
 							break;
 							
