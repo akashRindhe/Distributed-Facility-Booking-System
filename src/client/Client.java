@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -250,24 +251,30 @@ public class Client {
 		
 		System.out.println("Waiting for responses ");
 		long endTime = System.currentTimeMillis()+monitorInterval*60*1000;
-		while(true) {
+		socket.setSoTimeout((int) (endTime-System.currentTimeMillis()));
+		
+		while(LocalDateTime.now().compareTo(end.toLocalDateTime()) < 0 ) {
 			try {
-				socket.setSoTimeout((int) (endTime-System.currentTimeMillis()));
+				System.out.println("Time Now: " + LocalDateTime.now().toLocalTime().toString() +
+						" Monitor Interval Ends At: " + end.toLocalDateTime().toString());
 				Response response = receiveResponse();
 				QueryFacilityResponse monitorUpdateResponse = (QueryFacilityResponse) response.getData();
 				List<Booking> bookings = monitorUpdateResponse.getBookings();
-				System.out.println("Following bookings were made: ");
+				System.out.println("Time: " + LocalDateTime.now().toString() + ", Following bookings were made: ");
 				System.out.println("Booking ID|  User ID  |   Facility ID  |   From  |    To    ");
 				System.out.println("------------------------------------------------------------");
 				for(int i = 0; i<bookings.size(); i++)
 					System.out.println(bookings.get(i).getId() + "        |" + bookings.get(i).getFacilityId()+  "|" +bookings.get(i).getUserId() +  "|" +bookings.get(i).getBookingStart().toString() + "|" +bookings.get(i).getBookingEnd().toString() );				
-			
-				} catch (SocketTimeoutException e) {
-					System.out.println("Monitor interval expired!");
-				} finally {
-					System.out.println("Monitor interval expired!");
+				
+				//Update the timeout for the socket based on current time
+				socket.setSoTimeout((int) (endTime-System.currentTimeMillis()));
+				
+			} catch (SocketTimeoutException e) {
+					System.out.println("Time: " + LocalDateTime.now().toLocalTime().toString() + ": No more responses received from server. Monitor of "+ monitorInterval + " minutes expired!");
 					socket.setSoTimeout(0);
-			}
+			} 
 		}
+		System.out.println("Exiting monitor mode! \n");
+		
 	}
 }
