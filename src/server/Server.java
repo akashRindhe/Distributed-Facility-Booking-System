@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import server.filter.AtMostOnceFilter;
 import server.filter.CallbackFilter;
 import server.filter.FilterService;
 import shared.service.MarshallingService;
@@ -19,11 +20,18 @@ public class Server {
 	private DatagramSocket socket;
 	private FilterService filterService;
 	private Controller controller;
+	private History history;
+	private boolean isAtMostOnce;
 	
-	Server(int port) {
+	Server(int port, boolean isAtMostOnce) {
 		this.port = port;
 		this.filterService = new FilterService();
 		this.controller = new Controller();
+		this.isAtMostOnce = isAtMostOnce;
+		if (isAtMostOnce) {
+			this.filterService.addFilter(new AtMostOnceFilter());
+			this.history = new History();
+		}
 		this.filterService.addFilter(new CallbackFilter());
 		instance = this;
 	}
@@ -64,6 +72,9 @@ public class Server {
 			Response response;
 			try {
 				response = controller.processRequest(request);
+				if (isAtMostOnce) {
+					history.put(request, response);
+				}
 				sendResponse(response, packet.getAddress(), packet.getPort());
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
@@ -81,6 +92,10 @@ public class Server {
 				new DatagramPacket(buf, buf.length, address, port);
 		socket.send(packet);
 		System.out.println("Response sent");
+	}
+	
+	public History getHistory() {
+		return history;
 	}
 	
 	public static Server getInstance() {

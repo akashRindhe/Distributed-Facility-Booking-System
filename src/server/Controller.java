@@ -13,6 +13,7 @@ import shared.webservice.ChangeBookingRequest;
 import shared.webservice.ChangeBookingResponse;
 import shared.webservice.GetFacilitiesResponse;
 import shared.webservice.ModifyDurationRequest;
+import shared.webservice.ModifyDurationResponse;
 import shared.webservice.QueryFacilityRequest;
 import shared.webservice.QueryFacilityResponse;
 import shared.webservice.Request;
@@ -142,7 +143,10 @@ public class Controller {
 				(ModifyDurationRequest) request.getRequestData();
 		Booking booking = DatabaseAccess.fetchBookingById(data.getBookingId());
 		Timestamp bookEnd   = new Timestamp(booking.getBookingEnd().getTime() + data.getOffset()*60*1000);
-		return changeBooking(booking, booking.getBookingStart(), bookEnd);
+		changeBooking(booking, booking.getBookingStart(), bookEnd);
+		ModifyDurationResponse responseData = new ModifyDurationResponse();
+		responseData.setAcknowledgement("Booking duration modified successfully");
+		return new Response(responseData);
 	}
 	
 	private Response getFacilities(Request request) {

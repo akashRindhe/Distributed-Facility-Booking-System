@@ -1,6 +1,8 @@
 package shared.webservice;
 
-public class ModifyDurationResponse {
+import shared.Marshallable;
+
+public class ModifyDurationResponse implements Marshallable {
 	private String acknowledgement;
 
 	public String getAcknowledgement() {
