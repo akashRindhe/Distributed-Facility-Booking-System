@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import server.filter.AtMostOnceFilter;
 import server.filter.CallbackFilter;
 import server.filter.FilterService;
+import server.filter.TimeoutSimulationFilter;
 import shared.service.MarshallingService;
 import shared.webservice.Request;
 import shared.webservice.Response;
@@ -28,6 +29,7 @@ public class Server {
 		this.filterService = new FilterService();
 		this.controller = new Controller();
 		this.isAtMostOnce = isAtMostOnce;
+		this.filterService.addFilter(new TimeoutSimulationFilter());
 		if (isAtMostOnce) {
 			this.filterService.addFilter(new AtMostOnceFilter());
 			this.history = new History();
