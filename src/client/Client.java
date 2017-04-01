@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,17 +54,8 @@ public class Client {
 	
 	public void start(Request request) throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		socket = new DatagramSocket(clientPort);
-		byte[] sendBuf = marshallingService.marshal(request);
-		DatagramPacket sendPacket = new DatagramPacket(sendBuf, sendBuf.length, this.serverAddress, this.serverPort);
-		byte[] recBuf = new byte[10000];
-		DatagramPacket receivePacket = new DatagramPacket(recBuf, recBuf.length);
 		try {
-			socket.send(sendPacket);
-			System.out.println("Waiting for response: " );
-			System.out.println("sendPacket length:" + sendPacket.getLength());
-			socket.receive(receivePacket);
-			System.out.println("receivePacket length:" + receivePacket.getLength());
-			Response response = marshallingService.unmarshal(receivePacket.getData(), Response.class);
+			Response response = sendRequest(request);
 			processGetFacilitiesResponse(response);
 			
 			System.out.println("Response Class: " + response.getData().getClass());
@@ -88,12 +78,14 @@ public class Client {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 * @throws IOException
+	 * @throws ClassNotFoundException 
+	 * @throws InstantiationException 
 	 */
-	public Response sendRequest(Request request) throws IllegalArgumentException, IllegalAccessException, IOException {
+	public Response sendRequest(Request request) throws IllegalArgumentException, IllegalAccessException, IOException, InstantiationException, ClassNotFoundException {
 		return _sendRequest(request, 0);
 	}
 	
-	private Response _sendRequest(Request request, int attempt) {
+	private Response _sendRequest(Request request, int attempt) throws IllegalArgumentException, IllegalAccessException, IOException, InstantiationException, ClassNotFoundException {
 		byte[] buf = marshallingService.marshal(request);
 		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
 		socket.send(sendPacket);
@@ -107,7 +99,7 @@ public class Client {
 				throw e;
 			}
 			System.out.println("Request timeout. Retrying...");
-			_sendRequest(request, ++attempt);
+			response = _sendRequest(request, ++attempt);
 		} finally {
 			socket.setSoTimeout(0);
 		}
@@ -130,12 +122,6 @@ public class Client {
 		System.out.println("receivePacket length:" +receivePacket.getLength());
 		Response response = marshallingService.unmarshal(receivePacket.getData(), Response.class);
 		return response;
-	}
-	
-	private DatagramPacket doReceiveWithTimeout() {
-		
-		
-		return receivePacket;
 	}
 	
 	/**

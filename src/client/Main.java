@@ -147,7 +147,7 @@ public class Main {
 							request = controller.generateRequest(monitorRequest, Type.CALLBACK);
 							System.out.println("Monitoring facility " + facilityName);
 							response = client.sendRequest(request);
-							client.processCallbackResponse(response, monitorEnd, monitorInterval);
+							client.processCallbackResponse(response, monitorEnd);
 							System.out.println("Monitoring facility " + facilityName);						
 							break;
 							
