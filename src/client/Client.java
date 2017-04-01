@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -16,6 +17,8 @@ import shared.service.MarshallingService;
 import shared.webservice.*;
 
 public class Client {
+	private static final int TIMEOUT = 3000;
+	private static final int MAX_RETRY = 3;
 	
 	private int clientPort, serverPort;
 	private DatagramSocket socket;
@@ -102,12 +105,30 @@ public class Client {
 	 * @throws ClassNotFoundException
 	 */
 	public Response receiveResponse() throws IllegalArgumentException, IllegalAccessException, IOException, InstantiationException, ClassNotFoundException {
-		byte[] buf = new byte[10000];
-		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
-		socket.receive(receivePacket);
+		DatagramPacket receivePacket = doReceiveWithTimeout();
 		System.out.println("receivePacket length:" +receivePacket.getLength());
 		Response response = marshallingService.unmarshal(receivePacket.getData(), Response.class);
 		return response;
+	}
+	
+	private DatagramPacket doReceiveWithTimeout() {
+		byte[] buf = new byte[10000];
+		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
+		
+		for (int i = 0; i < MAX_RETRY; i++) {
+			try {
+				socket.setSoTimeout(TIMEOUT);
+				socket.receive(receivePacket);
+			} catch (SocketTimeoutException e) {
+				if (i == MAX_RETRY - 1) {
+					throw e;
+				}
+				System.out.println("Request timeout. Retrying...");
+			} finally {
+				socket.setSoTimeout(0);
+			}
+		}
+		return receivePacket;
 	}
 	
 	/**
