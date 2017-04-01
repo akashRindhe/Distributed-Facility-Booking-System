@@ -23,13 +23,18 @@ public class Server {
 	private Controller controller;
 	private History history;
 	private boolean isAtMostOnce;
+	private boolean simulateTimeout;
+	private long requestCount;
 	
-	Server(int port, boolean isAtMostOnce) {
+	Server(int port, boolean isAtMostOnce, boolean simulateTimeout) {
 		this.port = port;
 		this.filterService = new FilterService();
 		this.controller = new Controller();
 		this.isAtMostOnce = isAtMostOnce;
-		this.filterService.addFilter(new TimeoutSimulationFilter());
+		this.simulateTimeout = simulateTimeout;
+		if (simulateTimeout) {
+			this.filterService.addFilter(new TimeoutSimulationFilter());
+		}
 		if (isAtMostOnce) {
 			this.filterService.addFilter(new AtMostOnceFilter());
 			this.history = new History();
@@ -51,6 +56,7 @@ public class Server {
 						MarshallingService
 							.getInstance()
 							.unmarshal(packet.getData(), Request.class);
+				requestCount++;
 				processRequest(request, packet);
 			} catch (IOException e) {
 				throw e;
@@ -88,6 +94,10 @@ public class Server {
 	public void sendResponse(
 			Response response, InetAddress address, int port) 
 					throws IllegalArgumentException, IllegalAccessException, IOException {
+		if (simulateTimeout && requestCount % 3 == 2) {
+			System.out.println("Simulate response failure");
+			return;
+		}
 		byte[] buf = MarshallingService.getInstance().marshal(response);
 		DatagramPacket packet = 
 				new DatagramPacket(buf, buf.length, address, port);
@@ -97,6 +107,10 @@ public class Server {
 	
 	public History getHistory() {
 		return history;
+	}
+	
+	public long getRequestCount() {
+		return requestCount;
 	}
 	
 	public static Server getInstance() {

@@ -2,21 +2,18 @@ package server.filter;
 
 import java.net.DatagramPacket;
 
+import server.Server;
 import shared.webservice.Request;
 
 public class TimeoutSimulationFilter implements Filter {
 	
-	private int requestCount = 0;
-	
 	@Override
 	public boolean doFilter(Request request, DatagramPacket packet) {
-		requestCount++;
-		if (requestCount % 3 == 0) {
-			requestCount = 0;			
-			return true;
+		if (Server.getInstance().getRequestCount() % 3 == 1) {
+			System.out.println("Simulating request failure");
+			return false;
 		}
-		System.out.println("Simulating request failure");
-		return false;
+		return true;
 	}
 
 }
