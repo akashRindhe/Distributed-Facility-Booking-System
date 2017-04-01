@@ -16,6 +16,7 @@ public class Console {
 		optParser.accepts("clientPort").withRequiredArg().required().ofType(Integer.class);
 		optParser.accepts("serverPort").withRequiredArg().required().ofType(Integer.class);
 		optParser.accepts("userId").withRequiredArg().required().ofType(String.class);
+		optParser.accepts("maxRetries").withRequiredArg().ofType(Integer.class);
 		return optParser;
 	}
 	
