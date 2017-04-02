@@ -70,10 +70,7 @@ public class Main {
 							request = controller.generateRequest(queryRequest, Type.QUERY_FACILITY);
 							System.out.println("Querying for facility " + facilityName);
 							response = client.sendRequest(request);
-							if (response != null)
-								client.processQueryFacilityResponse(response, listDays);
-							else
-								System.exit(-1);
+							client.processQueryFacilityResponse(response, listDays);
 							
 							break;
 							
