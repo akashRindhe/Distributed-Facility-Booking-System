@@ -21,7 +21,7 @@ import shared.webservice.Type;
 
 public class CallbackFilter implements Filter {
 	
-	private static HashMap<Integer, LinkedList<MonitorWrapper>> map = new HashMap<>();
+	private static HashMap<String, LinkedList<MonitorWrapper>> map = new HashMap<>();
 	
 	@Override
 	public boolean doFilter(Request request, DatagramPacket packet) {
@@ -29,17 +29,17 @@ public class CallbackFilter implements Filter {
 			MonitorWrapper wrapper = new MonitorWrapper();
 			wrapper.clientPacket = packet;
 			wrapper.requestData = (CallbackRequest) request.getRequestData();
-			if (map.containsKey(wrapper.requestData.getFacilityId())) {
-				map.get(wrapper.requestData.getFacilityId()).add(wrapper);
+			if (map.containsKey(wrapper.requestData.getFacilityName())) {
+				map.get(wrapper.requestData.getFacilityName()).add(wrapper);
 			} else {
 				LinkedList<MonitorWrapper> list = new LinkedList<>();
 				list.add(wrapper);
-				map.put(wrapper.requestData.getFacilityId(), list);
+				map.put(wrapper.requestData.getFacilityName(), list);
 			}
 			System.out.println("Added client " + packet.getAddress().getHostAddress()
 					+ ":" + packet.getPort()
 					+ " as monitor for facility "
-					+ wrapper.requestData.getFacilityId());
+					+ wrapper.requestData.getFacilityName());
 		}
 		return true;
 	}
@@ -94,7 +94,7 @@ public class CallbackFilter implements Filter {
 	private static QueryFacilityRequest createQueryFacilityRequest(int facilityId) {
 		QueryFacilityRequest req = new QueryFacilityRequest();
 		Facility facility = DatabaseAccess.fetchFacilityById(facilityId);
-		req.setFacilityId(facility.getId());
+		req.setFacilityName(facility.getName());
 		Calendar cal = Calendar.getInstance();
 		List<Timestamp> timeList = new LinkedList<>();
 		for (int i = 0; i < 7; i++) {
