@@ -5,7 +5,11 @@ import java.sql.Date;
 import shared.model.*;
 import java.util.*;
 
-
+/**
+ * This class encapsulates the interactions of the server with the MySQL database.
+ * It contains various helper functions to get/update/delete data from the
+ * database.
+ */
 public class DatabaseAccess {
 	
 	private static Connection connectToDB() throws ClassNotFoundException, SQLException{

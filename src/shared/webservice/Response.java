@@ -2,8 +2,15 @@ package shared.webservice;
 
 import shared.Marshallable;
 
+/**
+ * This class encapsulates the data that is sent from the server to the client.
+ */
 public class Response implements Marshallable {
+	// This flag determines if an error has occurred.
 	private int isError;
+	
+	// This object contains the data for a particular request type. This field
+	// is of type ErrorData if an error occurs.
 	private Marshallable data;
 	
 	public Response () {

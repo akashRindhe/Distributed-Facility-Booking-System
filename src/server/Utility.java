@@ -7,8 +7,15 @@ import shared.model.Facility;
 import shared.webservice.BookFacilityRequest;
 import shared.webservice.Type;
 
+/**
+ * This class implements utility functions used by other classes.
+ */
 public class Utility {
 	
+	/**
+	 * Maps requestType to its appropriate String representation.
+	 * Used for logging purposes.
+	 */
 	public static String getRequestTypeString(int requestType) {
 		switch (requestType) {
 		case Type.QUERY_FACILITY:
@@ -37,6 +44,11 @@ public class Utility {
 		}
 	}
 	
+	/**
+	 * @param facilities - List of all facilities
+	 * @param facilityName - Given facility name
+	 * @return whether the given facilityName exists in facilities
+	 */
 	public static boolean doesFacilityExist(List<Facility> facilities, String facilityName) {
 		for (Facility facility : facilities) {
 			if (facility.getName().equals(facilityName)) {
@@ -46,6 +58,9 @@ public class Utility {
 		return false;
 	}
 	
+	/**
+	 * Get facilityId of the given facilityName
+	 */
 	public static int facilityNameToId(List<Facility> facilities, String facilityName) {
 		for (Facility facility : facilities) {
 			if (facility.getName().equals(facilityName)) {
@@ -55,6 +70,10 @@ public class Utility {
 		return -1;
 	}
 
+	/**
+	 * Create a Booking object based on the content of a
+	 * BookingFacilityRequest object.
+	 */
 	public static Booking getBookingFromRequest(
 			BookFacilityRequest data, List<Facility> facilities) {
 		Booking booking = new Booking();

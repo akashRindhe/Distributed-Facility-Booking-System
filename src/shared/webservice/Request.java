@@ -2,9 +2,16 @@ package shared.webservice;
 
 import shared.Marshallable;
 
+/**
+ * This class encapsulates the data that is sent from the client to the server.
+ */
 public class Request implements Marshallable {
 	private int requestType;
 	private String requestId;
+	
+	// This object contains the data for a particular request type. For
+	// example, if the request type is GET_FACILITIES, the type of this
+	// object would be GetFacilitiesRequest.
 	private Marshallable requestData;
 	
 	public int getRequestType() {

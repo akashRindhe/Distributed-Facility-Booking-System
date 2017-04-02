@@ -24,6 +24,10 @@ import shared.webservice.TransferBookingRequest;
 import shared.webservice.TransferBookingResponse;
 import shared.webservice.Type;
 
+/**
+ * This class is response for appropriately processing a request to generate
+ * the response based on the request type.
+ */
 public class Controller {
 	
 	private List<Facility> facilities;
@@ -32,6 +36,10 @@ public class Controller {
 		this.facilities = DatabaseAccess.fetchAllFacilities(); 
 	}
 	
+	/**
+	 * Dispatch request to the suitable function for processing
+	 * based on its type.
+	 */
 	public Response processRequest(Request request) {
 		switch (request.getRequestType()) {
 		case Type.QUERY_FACILITY:
@@ -62,6 +70,9 @@ public class Controller {
 		}
 	}
 	
+	/**
+	 * Fetches bookings for a facility for the specified days.
+	 */
 	private Response queryFacility(Request request) {
 		QueryFacilityRequest data = 
 				(QueryFacilityRequest) request.getRequestData();
@@ -78,7 +89,6 @@ public class Controller {
 							new Date(iter.next().getTime()));
 			bookingList.addAll(temp);
 		}
-		//Need to check if Facility Name exists or not
 		QueryFacilityResponse responseData = new QueryFacilityResponse();
 		responseData.setBookings(bookingList);
 		Response response = new Response(responseData);
@@ -86,6 +96,9 @@ public class Controller {
 		return response;
 	}
 	
+	/**
+	 * Book a facility for the specified time interval.
+	 */
 	private Response bookFacilty(Request request) {
 		BookFacilityRequest data = 
 				(BookFacilityRequest) request.getRequestData();
@@ -100,6 +113,7 @@ public class Controller {
 						Utility.facilityNameToId(facilities, data.getFacilityName()),
 						data.getStartTime(), 
 						data.getEndTime());
+		// Check for clashes in timeslots.
 		if (temp.size() > 0) {
 			return new Response("The requested timeslot is unavailable");
 		}
@@ -111,6 +125,11 @@ public class Controller {
 		return new Response(responseData);
 	}
 	
+	/**
+	 * Offset the booking period by the specified amount.
+	 * Note, this does not change the duration of the booking, it shifts it
+	 * by the given offset.
+	 */
 	private Response changeBooking(Request request){
 		ChangeBookingRequest data = 
 				(ChangeBookingRequest) request.getRequestData();
@@ -125,6 +144,10 @@ public class Controller {
 		return changeBooking(booking, bookStart, bookEnd);
 	}
 	
+	/**
+	 * Helper method to set the booking start and end times to the given start
+	 * and end times.
+	 */
 	private Response changeBooking(
 			Booking booking, Timestamp bookStart, Timestamp bookEnd) {
 		List<Booking> temp =
@@ -144,10 +167,14 @@ public class Controller {
 		ChangeBookingResponse responseData = new ChangeBookingResponse();
 		DatabaseAccess.changeBooking(booking);
 		responseData.setAcknowledgement("Your booking has been successfully altered in the system");
+		// Broadcast this update to clients monitoring this facility.
 		CallbackFilter.broadcastUpdate(booking.getFacilityId());
 		return new Response(responseData);
 	}
 
+	/**
+	 * Transfer an existing booking to a different user.
+	 */
 	private Response transferBooking(Request request) {
 		TransferBookingRequest data =
 				(TransferBookingRequest) request.getRequestData();
@@ -163,10 +190,14 @@ public class Controller {
 		TransferBookingResponse responseData = new TransferBookingResponse();
 		responseData.setAcknowledgement("Booking transferred successfully");
 		Booking booking = DatabaseAccess.fetchBookingById(data.getBookingId());
+		// Broadcast this update to clients monitoring this facility.
 		CallbackFilter.broadcastUpdate(booking.getFacilityId());
 		return new Response(responseData);
 	}
 	
+	/**
+	 * Shifts the end time of a booking by the specified offset amount.
+	 */
 	private Response modifyDuration(Request request) {
 		ModifyDurationRequest data =
 				(ModifyDurationRequest) request.getRequestData();
@@ -178,9 +209,14 @@ public class Controller {
 		changeBooking(booking, booking.getBookingStart(), bookEnd);
 		ModifyDurationResponse responseData = new ModifyDurationResponse();
 		responseData.setAcknowledgement("Booking duration modified successfully");
+		// Broadcast this update to clients monitoring this facility.
+		CallbackFilter.broadcastUpdate(booking.getFacilityId());
 		return new Response(responseData);
 	}
 	
+	/**
+	 * Fetches a list of all the facilities.
+	 */
 	private Response getFacilities(Request request) {
 		GetFacilitiesResponse responseData = new GetFacilitiesResponse();
 		responseData.setFacilities(DatabaseAccess.fetchAllFacilities());

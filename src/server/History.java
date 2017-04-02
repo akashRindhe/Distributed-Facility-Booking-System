@@ -5,6 +5,11 @@ import java.util.HashMap;
 import shared.webservice.Request;
 import shared.webservice.Response;
 
+/**
+ * This class maintains a history of requests using a HashMap.
+ * This is applicable only when the server is started with
+ * AtMostOnce invocation semantics.
+ */
 public class History {
 	
 	private HashMap<String, Response> history = new HashMap<>();
