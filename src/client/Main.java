@@ -17,7 +17,7 @@ import shared.webservice.*;
 public class Main {
 	
 	public static void main(String[] args) throws Exception {
-		System.out.println("Client terminal starting...");
+		System.out.print("Client terminal starting.... ");
 		Console console = new Console();
 		OptionParser optParser = console.getParser();
 		OptionSet optSet = optParser.parse(args);
@@ -41,7 +41,6 @@ public class Main {
 			
 			client.start(request);
 			facilities = client.getFacilities();
-			System.out.println("size of facilities: " + facilities.size());
 			
 			do {
 				console.displayMenu();
@@ -57,15 +56,13 @@ public class Main {
 							int length = sc.nextInt();
 							if (length > 7) {
 								System.out.println("Number of days can not be more than 7)");
-								System.exit(-1);
 							}
 							
 							List<Timestamp> listDays = new ArrayList<Timestamp>(length); 
-							for (int i=0; i<length; i++) {
+							for (int i=0; i < length; i++) {
 								System.out.print("Enter day "+ (i+1) + ": ");
 								String queryDayOfWeek = sc.next().toUpperCase();
 								Timestamp day = TimestampGenerator.generateDate(queryDayOfWeek);
-								System.out.println(day.toString());
 								listDays.add(day);
 							}
 							
@@ -73,7 +70,10 @@ public class Main {
 							request = controller.generateRequest(queryRequest, Type.QUERY_FACILITY);
 							System.out.println("Querying for facility " + facilityName);
 							response = client.sendRequest(request);
-							client.processQueryFacilityResponse(response);
+							if (response != null)
+								client.processQueryFacilityResponse(response, listDays);
+							else
+								System.exit(-1);
 							
 							break;
 							
@@ -86,12 +86,10 @@ public class Main {
 							System.out.print("Enter end time for booking (HH:mm): ");
 							String end = sc.next();
 							List<Timestamp> bookingTimestamp = TimestampGenerator.generateBookingTimestamp(bookingDay, start, end);
-							System.out.println("Start: " + bookingTimestamp.get(0));
-							System.out.println("End: " + bookingTimestamp.get(1));
 							
 							BookFacilityRequest bookingRequest = controller.generateBookingRequest(facilityName, bookingTimestamp.get(0), bookingTimestamp.get(1), userId);
 							request = controller.generateRequest(bookingRequest, Type.BOOK_FACILITY);
-							System.out.println("Booking facility " + facilityName + " on " + bookingDay + " from " + start + " to " + end);
+							System.out.println("Booking facility " + facilityName + " on " + bookingDay + " from " + bookingTimestamp.get(0) + " to " + bookingTimestamp.get(1));
 							response = client.sendRequest(request);
 							client.processBookFacilityResponse(response);
 							break;
@@ -103,13 +101,12 @@ public class Main {
 							if (( Math.abs(offset) % 30) == 0) {
 								ChangeBookingRequest changeRequest = controller.generateChangeRequest(bookingId, offset);
 								request = controller.generateRequest(changeRequest, Type.CHANGE_BOOKING);
-								System.out.println("Changing booking " + bookingId + " by " + offset + " minutes");
+								System.out.println("Changing booking " + bookingId + " by " + offset + " minutes.");
 								response = client.sendRequest(request);
 								client.processChangeBookingResponse(response);
 							}
 							else {
 								System.err.println("Time slots for 30 minutes intervals. Please provide valid inputs.");
-								System.exit(-1);
 							}
 							break;
 							
@@ -123,10 +120,9 @@ public class Main {
 							System.out.println("End :" + monitorEnd.toString());
 							CallbackRequest monitorRequest = controller.generateCallbackRequest(facilityName, monitorStart, monitorEnd);
 							request = controller.generateRequest(monitorRequest, Type.CALLBACK);
-							System.out.println("Monitoring facility " + facilityName);
+							System.out.println("Monitoring facility " + facilityName + " from " + monitorStart + " to " + monitorEnd);
 							response = client.sendRequest(request);
 							client.processCallbackResponse(response, monitorEnd, monitorInterval);
-							System.out.println("Monitoring facility " + facilityName);						
 							break;
 							
 					case 5: System.out.print("Enter UserID to transfer booking to: ");
@@ -149,7 +145,7 @@ public class Main {
 							
 							ModifyDurationRequest modifyRequest = controller.generateModifyRequest(bookingId, offset);
 							request = controller.generateRequest(modifyRequest, Type.MODIFY_DURATION);
-							System.out.println("Modify the duration of booking " + bookingId + " by " + offset);
+							System.out.println("Modify the duration of booking " + bookingId + " by " + offset + " minutes.");
 							response = client.sendRequest(request);
 							client.processModifyDurationResponse(response);
 							
@@ -164,7 +160,6 @@ public class Main {
 			} while (choice!=7);
 		}
 		catch (Exception e){
-			 System.err.println(e.getStackTrace() + " caused by " + e.getCause() + e.toString());
 			 e.printStackTrace();
 			 System.exit(-1);
 		}		

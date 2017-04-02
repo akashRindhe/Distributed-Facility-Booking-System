@@ -25,6 +25,7 @@ public class Console {
 		optParser.accepts("serverPort").withRequiredArg().required().ofType(Integer.class);
 		optParser.accepts("userId").withRequiredArg().required().ofType(String.class);
 		optParser.accepts("maxRetries").withRequiredArg().ofType(Integer.class);
+		optParser.accepts("timeout").withRequiredArg().ofType(Integer.class);
 		return optParser;
 	}
 	
@@ -32,6 +33,7 @@ public class Console {
 	 * Displays the menu of services provided
 	 */
 	public void displayMenu() {
+		System.out.println("================================");
 		System.out.println("Services Provided");
 		System.out.println("1. Query Facility Availability");
 		System.out.println("2. Book Facility");
@@ -40,7 +42,7 @@ public class Console {
 		System.out.println("5. Transfer Booking to User");
 		System.out.println("6. Modify Booking Duration");
 		System.out.println("7. Quit");
+		System.out.println("================================");
 		System.out.print("Enter an option: ");
 	}
-	
 }

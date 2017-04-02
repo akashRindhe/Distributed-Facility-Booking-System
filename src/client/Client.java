@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import client.utility.TimestampGenerator;
 import shared.model.Booking;
 import shared.model.Facility;
 import shared.service.MarshallingService;
@@ -20,8 +21,8 @@ import shared.webservice.*;
  * @author shuvamnandi
  */
 public class Client {
-	private static int TIMEOUT = 3000;
-	private static int MAX_RETRY = 3;
+	private static final int TIMEOUT = 3000;
+	private static final int MAX_RETRY = 3;
 	
 	private int clientPort, serverPort;
 	private DatagramSocket socket;
@@ -49,23 +50,6 @@ public class Client {
 		this.clientPort = clientPort;
 		this.serverPort = serverPort;
 		this.serverAddress = address;
-		this.marshallingService = MarshallingService.getInstance();
-		this.facilities = new ArrayList<Facility>();
-	}
-	
-	/**
-	 * Sets the port numbers for the client and server, and the server's IP address for the communications.
-	 * Sets the timeout for receiving responses from the server and the maximum number of retries for each request.
-	 * @param clientPort
-	 * @param serverPort
-	 * @param address
-	 */
-	Client (int clientPort, int serverPort, int maxAttempts, int timeout, InetAddress address) {
-		this.clientPort = clientPort;
-		this.serverPort = serverPort;
-		this.serverAddress = address;
-		Client.MAX_RETRY = maxAttempts;
-		Client.TIMEOUT = timeout;
 		this.marshallingService = MarshallingService.getInstance();
 		this.facilities = new ArrayList<Facility>();
 	}
@@ -162,13 +146,13 @@ public class Client {
 		byte[] buf = new byte[10000];
 		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 		socket.receive(receivePacket);
-		System.out.println("receivePacket length:" +receivePacket.getLength());
 		Response response = marshallingService.unmarshal(receivePacket.getData(), Response.class);
 		return response;
 	}
 	
 	/**
 	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * Displays the names and IDs of the facilities.
 	 * In case of an error, the error message is displayed.
 	 * @param response
 	 */
@@ -180,22 +164,23 @@ public class Client {
 		else {
 			GetFacilitiesResponse facilitiesResponse = (GetFacilitiesResponse) response.getData();
 			facilities = facilitiesResponse.getFacilities();
-			System.out.println("Size:" + facilities.size());
+			System.out.println("Number of facilities " + facilities.size());
 			
 			//Display all facilities
 			System.out.println("ID     |    Facility Name ");
 			System.out.println("--------------------------");
-			for(int i = 0; i<facilities.size(); i++)
+			for(int i = 0; i < facilities.size(); i++)
 				System.out.println(facilities.get(i).getId() + "  |      " + facilities.get(i).getName());
 		}
 	}
 	
 	/**
-	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * Retrieves the response data for the QueryFacilitiesRequest from the response object, and displays it to the user.
+	 * Displays the IDs of the facilities and their available time slots.
 	 * In case of an error, the error message is displayed.
 	 * @param response
 	 */
-	public void processQueryFacilityResponse(Response response) {
+	public void processQueryFacilityResponse(Response response, List<Timestamp> listDays) {
 		
 		if (response.getIsError() == 1) {
 			System.out.println("An error occured. Server message: " + ((ErrorData)response.getData()).getErrorType());
@@ -203,15 +188,40 @@ public class Client {
 		else {
 			QueryFacilityResponse queryResponse = (QueryFacilityResponse) response.getData();
 			List<Booking> bookings = queryResponse.getBookings();
-			System.out.println("Booking ID|  User ID  |   Facility ID  |   From  |    To    ");
-			System.out.println("------------------------------------------------------------");
-			for(int i = 0; i<bookings.size(); i++)
+			for (int i = 0; i < listDays.size(); i++) {
+				Timestamp t = TimestampGenerator.generateDate(listDays.get(i).toLocalDateTime().getDayOfWeek().toString().toUpperCase());
+				System.out.println(" Day      | Date                    | Free Times        ");
+				System.out.print(listDays.get(i).toLocalDateTime().getDayOfWeek() + "     " + t.toString());
+				if (bookings.size() == 0) {
+					System.out.println(" 00:00 - 24:00");
+				}
+				else {
+					for(int j = 0; j < bookings.size(); j++) {
+						Timestamp bookingStart = bookings.get(j).getBookingStart();
+						Timestamp bookingEnd = bookings.get(j).getBookingEnd();
+						if (bookingStart.getDate() == t.getDate() && bookingStart.getMonth() == t.getMonth()) {
+							System.out.println("Day: " + t.getDate() + " Month: " + (t.getMonth()+1));
+							System.out.println(bookingStart.getHours() + ":" + bookingStart.getMinutes());
+						}
+						//System.out.println(bookings.get(j).getId() + "        |" + bookings.get(j).getFacilityId()+  "|" +bookings.get(j).getUserId() +  "|" +bookings.get(j).getBookingStart().toString() + "|" +bookings.get(j).getBookingEnd().toString() );	
+					}
+				}
+			}
+			
+			if (bookings.size() > 0) {
+				System.out.println("Booking ID|  User ID  |   Facility ID  |   From  |    To    ");
+				System.out.println("------------------------------------------------------------");
+			}
+			else
+				System.out.println("No bookings exist.");
+			for(int i = 0; i < bookings.size(); i++)
 				System.out.println(bookings.get(i).getId() + "        |" + bookings.get(i).getFacilityId()+  "|" +bookings.get(i).getUserId() +  "|" +bookings.get(i).getBookingStart().toString() + "|" +bookings.get(i).getBookingEnd().toString() );	
 		}
 	}
 	
 	/**
-	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * Retrieves the response data for the BookFacilityRequest from the response object, and displays it to the user.
+	 * Displays the confirmation ID of booking, if was successful.
 	 * In case of an error, the error message is displayed.
 	 * @param response
 	 */
@@ -228,7 +238,8 @@ public class Client {
 	}
 	
 	/**
-	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * Retrieves the response data for the ChangeBookingRequest from the response object, and displays it to the user.
+	 * Displays the server acknowledgment message if booking change was successful.
 	 * In case of an error, the error message is displayed.
 	 * @param response
 	 */
@@ -240,12 +251,13 @@ public class Client {
 		else {
 			ChangeBookingResponse changeResponse = (ChangeBookingResponse) response.getData();
 			String ack = changeResponse.getAcknowledgement();
-			System.out.println("Server acknowledgement :" + ack);
+			System.out.println("Server acknowledgement: " + ack);
 		}
 	}
 	
 	/**
-	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * Retrieves the response data for the TransferBookingRequest from the response object, and displays it to the user.
+	 * Displays the server acknowledgment message if booking transfer was successful.
 	 * In case of an error, the error message is displayed.
 	 * @param response
 	 */
@@ -257,12 +269,13 @@ public class Client {
 		else {
 			TransferBookingResponse transferResponse = (TransferBookingResponse) response.getData();
 			String ack = transferResponse.getAcknowledgement();
-			System.out.println("Server acknowledgement :" +  ack);
+			System.out.println("Server acknowledgement: " +  ack);
 		}
 	}
 	
 	/**
-	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * Retrieves the response data for the ModifyDurationRequest from the response object, and displays it to the user.
+	 * Displays the server acknowledgment message if booking duration modification was successful.
 	 * In case of an error, the error message is displayed.
 	 * @param response
 	 */
@@ -274,12 +287,13 @@ public class Client {
 		else {
 			ModifyDurationResponse modifyResponse = (ModifyDurationResponse) response.getData();
 			String ack = modifyResponse.getAcknowledgement();
-			System.out.println("Server acknowledgement :" + ack);
+			System.out.println("Server acknowledgement: " + ack);
 		}
 	}
 
 	/**
-	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * Retrieves the response data for the CallbackRequest from the response object, and displays it to the user.
+	 * Displays the server acknowledgment message if callback was registered successfullly.
 	 * In case of an error, the error message is displayed.
 	 * @param response
 	 */
@@ -291,7 +305,7 @@ public class Client {
 		else {
 			CallbackResponse monitorResponse = (CallbackResponse) response.getData();
 			String ack = monitorResponse.getAcknowledgement();
-			System.out.println("Server acknowledgement :" + ack);
+			System.out.println("Server acknowledgement: " + ack);
 			processCallbackUpdateResponse(end, monitorInterval);
 		}
 		
@@ -299,28 +313,31 @@ public class Client {
 
 	/**
 	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
-	 * In case of an error, the error message is displayed.
+	 * Displays server sent updates regarding any activity concerning the facility the callback was registered for.
+	 * Keeps waiting for responses from the server, until the monitor interval expires. Timeout for the socket
+	 * is set based on the end time of monitor interval and the current time.
+	 * Upon expiry of the monitor interval, the timeout for socket is set as 0.
 	 * @param response
 	 */
 	private void processCallbackUpdateResponse(Timestamp end, int monitorInterval) 
 			throws IllegalArgumentException, IllegalAccessException, InstantiationException, 
 			ClassNotFoundException, IOException {
 		
-		System.out.println("Waiting for responses ");
+		System.out.println("Waiting for responses..");
 		long endTime = System.currentTimeMillis()+monitorInterval*60*1000;
 		socket.setSoTimeout((int) (endTime-System.currentTimeMillis()));
 		
 		while(LocalDateTime.now().compareTo(end.toLocalDateTime()) < 0 ) {
 			try {
 				System.out.println("Time Now: " + LocalDateTime.now().toLocalTime().toString() +
-						" Monitor Interval Ends At: " + end.toLocalDateTime().toString());
+						", Monitor Interval Ends At: " + end.toLocalDateTime().toString());
 				Response response = receiveResponse();
 				QueryFacilityResponse monitorUpdateResponse = (QueryFacilityResponse) response.getData();
 				List<Booking> bookings = monitorUpdateResponse.getBookings();
-				System.out.println("Time: " + LocalDateTime.now().toString() + ", Following bookings were made: ");
+				System.out.println("Time: " + LocalDateTime.now().toString() + ", following changes were made to facility: ");
 				System.out.println("Booking ID|  User ID  |   Facility ID  |   From  |    To    ");
 				System.out.println("------------------------------------------------------------");
-				for(int i = 0; i<bookings.size(); i++)
+				for(int i = 0; i < bookings.size(); i++)
 					System.out.println(bookings.get(i).getId() + "        |" + bookings.get(i).getFacilityId()+  "|" +bookings.get(i).getUserId() +  "|" +bookings.get(i).getBookingStart().toString() + "|" +bookings.get(i).getBookingEnd().toString() );				
 				
 				//Update the timeout for the socket based on current time
