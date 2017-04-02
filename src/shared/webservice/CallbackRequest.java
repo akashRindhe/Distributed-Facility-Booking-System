@@ -9,11 +9,11 @@ public class CallbackRequest implements Marshallable {
 	private Timestamp monitorStart;
 	private Timestamp monitorEnd;
 	
-	public String getFacilityId() {
+	public String getFacilityName() {
 		return facilityName;
 	}
 	
-	public void setFacilityId(String facilityName) {
+	public void setFacilityName(String facilityName) {
 		this.facilityName = facilityName;
 	}
 

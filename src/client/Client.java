@@ -203,11 +203,6 @@ public class Client {
 		else {
 			QueryFacilityResponse queryResponse = (QueryFacilityResponse) response.getData();
 			List<Booking> bookings = queryResponse.getBookings();
-			List<Facility> freeFacilities = new ArrayList<Facility>();
-			//Display all bookings
-			for (int i=0; i<bookings.size(); i++){
-				
-			}
 			System.out.println("Booking ID|  User ID  |   Facility ID  |   From  |    To    ");
 			System.out.println("------------------------------------------------------------");
 			for(int i = 0; i<bookings.size(); i++)

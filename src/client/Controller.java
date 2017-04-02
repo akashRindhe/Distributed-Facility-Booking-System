@@ -1,7 +1,6 @@
 package client;
 
 import shared.Marshallable;
-import shared.model.Booking;
 import shared.webservice.*;
 
 import java.sql.Timestamp;
@@ -22,26 +21,23 @@ public class Controller {
 		
 	}
 	
-	public QueryFacilityRequest generateQueryRequest (int facilityId, List<Timestamp> days) {
+	public QueryFacilityRequest generateQueryRequest (String facilityName, List<Timestamp> days) {
 		
 		QueryFacilityRequest request = new QueryFacilityRequest();
-		request.setFacilityId(facilityId);
+		request.setFacilityName(facilityName);
 		request.setDays(days);
 		return request;
 		
 	}
 	
-	public BookFacilityRequest generateBookingRequest (String userId, int facilityId, Timestamp start, Timestamp end) {
+	public BookFacilityRequest generateBookingRequest (String facilityName, Timestamp start, Timestamp end, String userId) {
 		
-		Booking booking = new Booking();
-		booking.setId(0);
-		booking.setUserId(userId);
-		booking.setFacilityId(facilityId);
-		booking.setBookingStart(start);
-		booking.setBookingEnd(end);
-		BookFacilityRequest request = new BookFacilityRequest(booking);
+		BookFacilityRequest request = new BookFacilityRequest();
+		request.setFacilityName(facilityName);
+		request.setStartTime(start);
+		request.setEndTime(end);
+		request.setUserId(userId);
 		return request;
-		
 	}
 
 	public ChangeBookingRequest generateChangeRequest(int bookingId, int offsetMinutes) {
@@ -72,11 +68,11 @@ public class Controller {
 		
 	}
 
-	public CallbackRequest generateCallbackRequest(int facilityId,
+	public CallbackRequest generateCallbackRequest(String facilityName,
 			Timestamp monitorStart, Timestamp monitorEnd) {
 		
 		CallbackRequest request = new CallbackRequest();
-		request.setFacilityId(facilityId);
+		request.setFacilityName(facilityName);
 		request.setMonitorStart(monitorStart);
 		request.setMonitorEnd(monitorEnd);
 		return request;

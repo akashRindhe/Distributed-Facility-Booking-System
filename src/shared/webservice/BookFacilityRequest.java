@@ -3,7 +3,6 @@ package shared.webservice;
 import java.sql.Timestamp;
 
 import shared.Marshallable;
-import shared.model.Booking;
 
 public class BookFacilityRequest implements Marshallable {
 	private String facilityName;
