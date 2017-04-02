@@ -7,16 +7,16 @@ import java.util.List;
 import shared.Marshallable;
 
 public class QueryFacilityRequest implements Marshallable {
-	private int facilityId;
+	private String facilityName;
 	private List<Timestamp> days = new ArrayList<Timestamp>();
 	
 	
-	public int getFacilityId() {
-		return facilityId;
+	public String getFacilityName() {
+		return facilityName;
 	}
 
-	public void setFacilityId(int facilityId) {
-		this.facilityId = facilityId;
+	public void setFacilityName(String facilityName) {
+		this.facilityName = facilityName;
 	}
 
 	public List<Timestamp> getDays() {

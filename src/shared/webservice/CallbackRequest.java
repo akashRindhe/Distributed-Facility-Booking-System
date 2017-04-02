@@ -5,16 +5,16 @@ import java.sql.Timestamp;
 import shared.Marshallable;
 
 public class CallbackRequest implements Marshallable {
-	private int facilityId;
+	private String facilityName;
 	private Timestamp monitorStart;
 	private Timestamp monitorEnd;
 	
-	public int getFacilityId() {
-		return facilityId;
+	public String getFacilityId() {
+		return facilityName;
 	}
 	
-	public void setFacilityId(int facilityId) {
-		this.facilityId = facilityId;
+	public void setFacilityId(String facilityName) {
+		this.facilityName = facilityName;
 	}
 
 	public Timestamp getMonitorStart() {
