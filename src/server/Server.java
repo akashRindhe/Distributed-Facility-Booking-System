@@ -5,6 +5,11 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig.Feature;
+
 import server.filter.AtMostOnceFilter;
 import server.filter.CallbackFilter;
 import server.filter.FilterService;
@@ -25,6 +30,7 @@ public class Server {
 	private boolean isAtMostOnce;
 	private boolean simulateTimeout;
 	private long requestCount;
+	private ObjectMapper objectMapper;
 	
 	Server(int port, boolean isAtMostOnce, boolean simulateTimeout) {
 		this.port = port;
@@ -32,6 +38,8 @@ public class Server {
 		this.controller = new Controller();
 		this.isAtMostOnce = isAtMostOnce;
 		this.simulateTimeout = simulateTimeout;
+		this.objectMapper = new ObjectMapper();
+		objectMapper.configure(Feature.FAIL_ON_EMPTY_BEANS, false);
 		if (simulateTimeout) {
 			this.filterService.addFilter(new TimeoutSimulationFilter());
 		}
@@ -75,6 +83,12 @@ public class Server {
 	private void processRequest(Request request, DatagramPacket packet) 
 			throws IOException, IllegalArgumentException, IllegalAccessException {
 		System.out.println("Processing request of type: " + request.getRequestType());
+		try {
+			System.out.println(objectMapper.writeValueAsString(request));
+		} catch (JsonGenerationException | JsonMappingException e) {
+			e.printStackTrace();
+		}
+		System.out.println();
 		if (filterService.performFiltering(request, packet)) {
 			Response response;
 			try {
@@ -103,6 +117,12 @@ public class Server {
 				new DatagramPacket(buf, buf.length, address, port);
 		socket.send(packet);
 		System.out.println("Response sent to " + address.getHostAddress() + ":" + port);
+		try {
+			System.out.println(objectMapper.writeValueAsString(response));
+		} catch (JsonGenerationException | JsonMappingException e) {
+			e.printStackTrace();
+		}
+		System.out.println();
 	}
 	
 	public History getHistory() {
