@@ -7,6 +7,7 @@ import java.util.List;
 
 import server.filter.CallbackFilter;
 import shared.model.Booking;
+import shared.model.Facility;
 import shared.webservice.BookFacilityRequest;
 import shared.webservice.BookFacilityResponse;
 import shared.webservice.CallbackResponse;
@@ -24,6 +25,12 @@ import shared.webservice.TransferBookingResponse;
 import shared.webservice.Type;
 
 public class Controller {
+	
+	private List<Facility> facilities;
+	
+	public Controller() {
+		this.facilities = DatabaseAccess.fetchAllFacilities(); 
+	}
 	
 	public Response processRequest(Request request) {
 		switch (request.getRequestType()) {
@@ -58,13 +65,16 @@ public class Controller {
 	private Response queryFacility(Request request) {
 		QueryFacilityRequest data = 
 				(QueryFacilityRequest) request.getRequestData();
+		if (!Utility.doesFacilityExist(facilities, data.getFacilityName())) {
+			return new Response("Facility does not exist");
+		}
 		List<Booking> bookingList = new LinkedList<>();
 		Iterator<Timestamp> iter = data.getDays().iterator();
 		
 		while (iter.hasNext()) {
 			List<Booking> temp = 
 					DatabaseAccess.fetchBookings(
-							data.getFacilityId(), 
+							Utility.facilityNameToId(facilities, data.getFacilityName()), 
 							new Date(iter.next().getTime()));
 			bookingList.addAll(temp);
 		}
@@ -79,18 +89,25 @@ public class Controller {
 	private Response bookFacilty(Request request) {
 		BookFacilityRequest data = 
 				(BookFacilityRequest) request.getRequestData();
+		if (DatabaseAccess.fetchUserById(data.getUserId()) == null) {
+			return new Response("The given userId does not exist");
+		}
+		if (!Utility.doesFacilityExist(facilities, data.getFacilityName())) {
+			return new Response("Facility does not exist");
+		}
 		List<Booking> temp = 
 				DatabaseAccess.fetchBookings(
-						data.getBooking().getFacilityId(),
-						data.getBooking().getBookingStart(), 
-						data.getBooking().getBookingEnd());
+						Utility.facilityNameToId(facilities, data.getFacilityName()),
+						data.getStartTime(), 
+						data.getEndTime());
 		if (temp.size() > 0) {
 			return new Response("The requested timeslot is unavailable");
 		}
 		
 		BookFacilityResponse responseData = new BookFacilityResponse();
-		responseData.setConfirmationId(DatabaseAccess.addBooking(data.getBooking()));
-		CallbackFilter.broadcastUpdate(data.getBooking().getFacilityId());
+		responseData.setConfirmationId(
+				DatabaseAccess.addBooking(Utility.getBookingFromRequest(data, facilities)));
+		CallbackFilter.broadcastUpdate(Utility.facilityNameToId(facilities, data.getFacilityName()));
 		return new Response(responseData);
 	}
 	
@@ -100,6 +117,9 @@ public class Controller {
 		Booking booking = 
 				DatabaseAccess.fetchBookingById(
 						data.getConfirmationId());
+		if (booking == null) {
+			return new Response("Booking does not exist");
+		}
 		Timestamp bookStart = new Timestamp(booking.getBookingStart().getTime() + data.getOffset()*60*1000); 
 		Timestamp bookEnd   = new Timestamp(booking.getBookingEnd().getTime() + data.getOffset()*60*1000);
 		return changeBooking(booking, bookStart, bookEnd);
@@ -131,6 +151,12 @@ public class Controller {
 	private Response transferBooking(Request request) {
 		TransferBookingRequest data =
 				(TransferBookingRequest) request.getRequestData();
+		if (DatabaseAccess.fetchUserById(data.getNewUserId()) == null) {
+			return new Response("The userId the facility is being transferred to does not exist");
+		}
+		if (DatabaseAccess.fetchBookingById(data.getBookingId()) == null) {
+			return new Response("Booking does not exist");
+		}
 		DatabaseAccess
 			.changeBookingUserId(
 					data.getBookingId(), data.getNewUserId());
@@ -145,6 +171,9 @@ public class Controller {
 		ModifyDurationRequest data =
 				(ModifyDurationRequest) request.getRequestData();
 		Booking booking = DatabaseAccess.fetchBookingById(data.getBookingId());
+		if (booking == null) {
+			return new Response("Booking does not exist");
+		}
 		Timestamp bookEnd   = new Timestamp(booking.getBookingEnd().getTime() + data.getOffset()*60*1000);
 		changeBooking(booking, booking.getBookingStart(), bookEnd);
 		ModifyDurationResponse responseData = new ModifyDurationResponse();

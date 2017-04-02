@@ -74,7 +74,7 @@ public class DatabaseAccess {
 	
 	public static User fetchUserById(String id)
 	{
-		User user = new User();
+		User user = null;
 		try {
 			Connection connection = connectToDB();
 			Statement stmt = connection.createStatement();
@@ -82,6 +82,7 @@ public class DatabaseAccess {
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next())
 			{
+				user = new User();
 				user.setId(rs.getString("id"));
 				user.setUserName(rs.getString("userName"));
 			}
@@ -98,7 +99,7 @@ public class DatabaseAccess {
 	
 	public static Booking fetchBookingById(int id)
 	{
-		Booking booking = new Booking();
+		Booking booking = null;
 		try {
 			Connection connection = connectToDB();
 			Statement stmt = connection.createStatement();
@@ -106,6 +107,7 @@ public class DatabaseAccess {
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next())
 			{
+				booking = new Booking();
 				booking.setId(rs.getInt("id"));
 				booking.setFacilityId(rs.getInt("facilityId"));
 				booking.setUserId(rs.getString("userId"));
