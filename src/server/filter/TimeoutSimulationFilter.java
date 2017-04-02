@@ -11,6 +11,7 @@ public class TimeoutSimulationFilter implements Filter {
 	public boolean doFilter(Request request, DatagramPacket packet) {
 		if (Server.getInstance().getRequestCount() % 3 == 1) {
 			System.out.println("Simulating request failure");
+			System.out.println();
 			return false;
 		}
 		return true;

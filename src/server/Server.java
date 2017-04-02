@@ -32,15 +32,15 @@ public class Server {
 	private long requestCount;
 	private ObjectMapper objectMapper;
 	
-	Server(int port, boolean isAtMostOnce, boolean simulateTimeout) {
+	Server(int port, boolean isAtMostOnce, boolean simulateErrors) {
 		this.port = port;
 		this.filterService = new FilterService();
 		this.controller = new Controller();
 		this.isAtMostOnce = isAtMostOnce;
-		this.simulateTimeout = simulateTimeout;
+		this.simulateTimeout = simulateErrors;
 		this.objectMapper = new ObjectMapper();
 		objectMapper.configure(Feature.FAIL_ON_EMPTY_BEANS, false);
-		if (simulateTimeout) {
+		if (simulateErrors) {
 			this.filterService.addFilter(new TimeoutSimulationFilter());
 		}
 		if (isAtMostOnce) {
@@ -54,6 +54,9 @@ public class Server {
 	public void start() throws IOException, ClassNotFoundException {
 		socket = new DatagramSocket(port);
 		System.out.println("Server started on port " + port);
+		System.out.println("AtMostOnce invocation: " + isAtMostOnce);
+		System.out.println("Is simulating errors: " + simulateTimeout);
+		System.out.println();
 		while (true) {
 			try {
 				System.out.println("Waiting to receive packet");
@@ -82,7 +85,7 @@ public class Server {
 	
 	private void processRequest(Request request, DatagramPacket packet) 
 			throws IOException, IllegalArgumentException, IllegalAccessException {
-		System.out.println("Processing request of type: " + request.getRequestType());
+		System.out.println("Processing request of type: " + Utility.getRequestTypeString(request.getRequestType()));
 		try {
 			System.out.println(objectMapper.writeValueAsString(request));
 		} catch (JsonGenerationException | JsonMappingException e) {
@@ -110,6 +113,7 @@ public class Server {
 					throws IllegalArgumentException, IllegalAccessException, IOException {
 		if (simulateTimeout && requestCount % 3 == 2) {
 			System.out.println("Simulate response failure");
+			System.out.println();
 			return;
 		}
 		byte[] buf = MarshallingService.getInstance().marshal(response);

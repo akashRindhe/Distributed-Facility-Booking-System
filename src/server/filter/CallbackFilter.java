@@ -56,25 +56,24 @@ public class CallbackFilter implements Filter {
 	}
 	
 	private static void _broadcastUpdate(int facilityId) {
-		System.out.println("Broadcasting updates for facility: " + facilityId);
 		Request request = new Request();
 		request.setRequestType(Type.QUERY_FACILITY);
-		request.setRequestData(createQueryFacilityRequest(facilityId));
+		QueryFacilityRequest reqData = createQueryFacilityRequest(facilityId); 
+		request.setRequestData(reqData);
+		System.out.println("Broadcasting updates for facility: " + reqData.getFacilityName());
 		Response response = (new Controller()).processRequest(request);
-		List<MonitorWrapper> list = map.get(facilityId);
+		List<MonitorWrapper> list = map.get(reqData.getFacilityName());
 		if (list != null) {
 			Iterator<MonitorWrapper> iter = list.iterator();
 			while(iter.hasNext()) {
 				MonitorWrapper wrapper = iter.next();
 				Timestamp current = new Timestamp(System.currentTimeMillis());
-				System.out.println("time now: " + current.toString() + " mtr start: "
-						+ wrapper.requestData.getMonitorStart() + " mtr end: "
-						+ wrapper.requestData.getMonitorEnd());
 				if (current.compareTo(wrapper.requestData.getMonitorStart()) >= 0
 						&& current.compareTo(wrapper.requestData.getMonitorEnd()) <= 0) {
 					try {
 						System.out.println("Sending update to client: "
-								+ wrapper.clientPacket.getAddress().getHostAddress());
+								+ wrapper.clientPacket.getAddress().getHostAddress() + ":"
+								+ wrapper.clientPacket.getPort());
 						Server
 							.getInstance()
 							.sendResponse(
@@ -83,9 +82,16 @@ public class CallbackFilter implements Filter {
 									wrapper.clientPacket.getPort());
 					} catch (IllegalArgumentException | IllegalAccessException | IOException e) {
 						System.out.println("Error broadcasting to client: "
-								+ wrapper.clientPacket.getAddress().getHostAddress());
+								+ wrapper.clientPacket.getAddress().getHostAddress() + ":"
+								+ wrapper.clientPacket.getPort());
 						e.printStackTrace();
 					}
+				} else {
+					iter.remove();
+					System.out.println("Removed monitor for client "
+							+ wrapper.clientPacket.getAddress().getHostAddress() + ":"
+							+ wrapper.clientPacket.getPort()
+							+ " for facility " + wrapper.requestData.getFacilityName());
 				}
 			}
 		}

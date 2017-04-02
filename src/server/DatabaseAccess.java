@@ -190,7 +190,6 @@ public class DatabaseAccess {
 			Connection connection = connectToDB();
 			Statement stmt = connection.createStatement();
 			String sql = "SELECT * FROM Booking WHERE facilityId = " + id + " AND DATE(bookingStart) = '" + date + "' ORDER BY bookingStart";
-			System.out.println(sql);
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next())
 			{

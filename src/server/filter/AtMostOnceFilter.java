@@ -13,7 +13,8 @@ public class AtMostOnceFilter implements Filter {
 	public boolean doFilter(Request request, DatagramPacket packet) {
 		History hist = Server.getInstance().getHistory();
 		if (hist.contains(request)) {
-			System.out.println("Found in history, request: " + request.getRequestId());
+			System.out.println("Request found in history, requestId: " + request.getRequestId());
+			System.out.println();
 			try {
 				Server
 					.getInstance()
@@ -24,7 +25,8 @@ public class AtMostOnceFilter implements Filter {
 			}
 			return false;
 		}
-		System.out.println("Not found in history, request: " + request.getRequestId());
+		System.out.println("Request NOT found in history, requestId: " + request.getRequestId());
+		System.out.println();
 		return true;
 	}
 
