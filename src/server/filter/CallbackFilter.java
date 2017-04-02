@@ -60,7 +60,6 @@ public class CallbackFilter implements Filter {
 		request.setRequestType(Type.QUERY_FACILITY);
 		QueryFacilityRequest reqData = createQueryFacilityRequest(facilityId); 
 		request.setRequestData(reqData);
-		System.out.println("Broadcasting updates for facility: " + reqData.getFacilityName());
 		Response response = (new Controller()).processRequest(request);
 		List<MonitorWrapper> list = map.get(reqData.getFacilityName());
 		if (list != null) {
@@ -73,7 +72,8 @@ public class CallbackFilter implements Filter {
 					try {
 						System.out.println("Sending update to client: "
 								+ wrapper.clientPacket.getAddress().getHostAddress() + ":"
-								+ wrapper.clientPacket.getPort());
+								+ wrapper.clientPacket.getPort()
+								+ " for facility: " + wrapper.requestData.getFacilityName());
 						Server
 							.getInstance()
 							.sendResponse(
