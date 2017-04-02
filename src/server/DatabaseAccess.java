@@ -344,61 +344,6 @@ public class DatabaseAccess {
 		}
 	}
 	
-	public static void addCallbackInfo (CallbackInfo callback)
-	{
-		try {
-			Connection connection = connectToDB();
-			String sql = "INSERT INTO CallbackInfo (id, address, portNumber, facilityId, intervalStart, intervalEnd)"
-					+ " values (?, ?, ?, ?, ?, ?)";
-			PreparedStatement preparedStmt = connection.prepareStatement(sql); 
-			preparedStmt.setInt(1, callback.getId());
-			preparedStmt.setString(2, callback.getAddress());
-			preparedStmt.setInt(3, callback.getPortNumber());
-			preparedStmt.setInt(4, callback.getFacilityId());
-			preparedStmt.setTimestamp(5, callback.getIntervalStart());
-			preparedStmt.setTimestamp(6, callback.getIntervalEnd());
-			
-			preparedStmt.execute();
-			connection.close();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			System.out.println("SQL Driver not found");
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Connection Error");
-		}	
-	}
-	
-	public static List<CallbackInfo> fetchAllCallbacks ()
-	{
-		List<CallbackInfo> callbacks = new ArrayList<CallbackInfo>();
-		try {
-			Connection connection = connectToDB();
-			Statement stmt = connection.createStatement();
-			String sql = "SELECT * FROM CallbackInfo";
-			ResultSet rs = stmt.executeQuery(sql);
-			while (rs.next())
-			{
-				CallbackInfo callback = new CallbackInfo();
-				callback.setId(rs.getInt("id"));
-				callback.setAddress(rs.getString("address"));
-				callback.setPortNumber(rs.getInt("portNumber"));
-				callback.setFacilityId(rs.getInt("facilityId"));
-				callback.setIntervalStart(rs.getTimestamp("intervalStart"));
-				callback.setIntervalEnd(rs.getTimestamp("intervalEnd"));
-				callbacks.add(callback);
-			}
-			connection.close();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			System.out.println("SQL Driver not found");
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Connection Error");
-		}
-		return callbacks;
-	}
-
 	public static void deleteBooking (Booking booking)
 	{
 		try {
@@ -406,25 +351,6 @@ public class DatabaseAccess {
 			String sql = "DELETE FROM Booking WHERE id = ?";
 			PreparedStatement preparedStmt = connection.prepareStatement(sql); 
 			preparedStmt.setInt(1, booking.getId());
-			
-			preparedStmt.execute();
-			connection.close();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			System.out.println("SQL Driver not found");
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Connection Error");
-		}
-	}
-	
-	public static void deleteCallback (CallbackInfo callback)
-	{
-		try {
-			Connection connection = connectToDB();
-			String sql = "DELETE FROM CallbackInfo WHERE id = ?";
-			PreparedStatement preparedStmt = connection.prepareStatement(sql); 
-			preparedStmt.setInt(1, callback.getId());
 			
 			preparedStmt.execute();
 			connection.close();
