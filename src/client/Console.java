@@ -3,6 +3,10 @@ package client;
 import java.util.Scanner;
 import joptsimple.OptionParser;
 
+/**
+ * Supporting functions to accept user arguments while launching the Client and display on the console
+ * @author shuvamnandi
+ */
 public class Console {
 	Scanner scanner = new Scanner(System.in);
 	
@@ -10,6 +14,10 @@ public class Console {
 		return scanner;
 	}
 	
+	/**
+	 * @return OptionParser object which requires server IP address, clientPort, serverPort, and userId to be specified 
+	 * and maxRetires as an optional argument
+	 */
 	public OptionParser getParser() {
 		OptionParser optParser = new OptionParser();
 		optParser.accepts("ip").withRequiredArg().required().ofType(String.class);
@@ -20,6 +28,9 @@ public class Console {
 		return optParser;
 	}
 	
+	/**
+	 * Displays the menu of services provided
+	 */
 	public void displayMenu() {
 		System.out.println("Services Provided");
 		System.out.println("1. Query Facility Availability");

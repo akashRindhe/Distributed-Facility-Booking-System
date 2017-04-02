@@ -15,9 +15,13 @@ import shared.model.Facility;
 import shared.service.MarshallingService;
 import shared.webservice.*;
 
+/**
+ * Client 
+ * @author shuvamnandi
+ */
 public class Client {
-	private static final int TIMEOUT = 3000;
-	private static final int MAX_RETRY = 3;
+	private static int TIMEOUT = 3000;
+	private static int MAX_RETRY = 3;
 	
 	private int clientPort, serverPort;
 	private DatagramSocket socket;
@@ -28,12 +32,19 @@ public class Client {
 	
 	/**
 	 * 
-	 * @return the list of facilities 
+	 * @return the list of all facilities
 	 */
 	public List<Facility> getFacilities() {
 		return facilities;
 	}
-
+	
+	
+	/**
+	 * Sets the port numbers for the client and server, and the server's IP address for the communications
+	 * @param clientPort
+	 * @param serverPort
+	 * @param address
+	 */
 	Client (int clientPort, int serverPort, InetAddress address) {
 		this.clientPort = clientPort;
 		this.serverPort = serverPort;
@@ -43,7 +54,24 @@ public class Client {
 	}
 	
 	/**
-	 * Starts the client and sends a request object to the server, and then processes the response
+	 * Sets the port numbers for the client and server, and the server's IP address for the communications.
+	 * Sets the timeout for receiving responses from the server and the maximum number of retries for each request.
+	 * @param clientPort
+	 * @param serverPort
+	 * @param address
+	 */
+	Client (int clientPort, int serverPort, int maxAttempts, int timeout, InetAddress address) {
+		this.clientPort = clientPort;
+		this.serverPort = serverPort;
+		this.serverAddress = address;
+		Client.MAX_RETRY = maxAttempts;
+		Client.TIMEOUT = timeout;
+		this.marshallingService = MarshallingService.getInstance();
+		this.facilities = new ArrayList<Facility>();
+	}
+	
+	/**
+	 * Starts the client and sends a request object to the server, processes the response thereafter
 	 * @param request - Request object containing the request object of the GetFacilities service
 	 * @throws IOException
 	 * @throws IllegalArgumentException
@@ -51,15 +79,11 @@ public class Client {
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
 	 */
-	
 	public void start(Request request) throws IOException, IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 		socket = new DatagramSocket(clientPort);
 		try {
 			Response response = sendRequest(request);
 			processGetFacilitiesResponse(response);
-			
-			System.out.println("Response Class: " + response.getData().getClass());
-			
 		} catch (IOException e) {
 			throw e;
 		}
@@ -73,19 +97,35 @@ public class Client {
 	}
 	
 	/**
-	 * Sends a request object to the server
-	 * @param request - Request object containing the request type and the request object for service to be invoked
+	 * Sends a request object by calling the private function _sendRequest to the server
+	 * @param request - Request object containing the request type and the request data for service to be invoked
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 * @throws IOException
-	 * @throws ClassNotFoundException 
-	 * @throws InstantiationException 
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
 	 */
-	public Response sendRequest(Request request) throws IllegalArgumentException, IllegalAccessException, IOException, InstantiationException, ClassNotFoundException {
+	public Response sendRequest(Request request) 
+			throws IllegalArgumentException, IllegalAccessException, 
+	IOException, InstantiationException, ClassNotFoundException {
 		return _sendRequest(request, 0);
 	}
 	
-	private Response _sendRequest(Request request, int attempt) throws IllegalArgumentException, IllegalAccessException, IOException, InstantiationException, ClassNotFoundException {
+	/**
+	 * Sends a request object to the server and receives a response accordingly. The timeout of the socket is set as 
+	 * TIMEOUT, upon its expiry another request is sent MAX_RETRIES - 1 times.
+	 * @param request
+	 * @param attempt
+	 * @return response received from the server, for the service request sent
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 * @throws IOException
+	 * @throws InstantiationException
+	 * @throws ClassNotFoundException
+	 */
+	private Response _sendRequest(Request request, int attempt) 
+			throws IllegalArgumentException, IllegalAccessException, IOException, 
+			InstantiationException, ClassNotFoundException {
 		byte[] buf = marshallingService.marshal(request);
 		DatagramPacket sendPacket = new DatagramPacket(buf, buf.length, this.serverAddress, this.serverPort);
 		socket.send(sendPacket);
@@ -107,7 +147,8 @@ public class Client {
 	}
 	
 	/**
-	 * Waits until a server response is obtained at the socket
+	 * Waits until a server response is obtained at the socket. It is a blocking call which waits 
+	 * until a packet is received.
 	 * @return a response object sent by the server
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
@@ -115,7 +156,9 @@ public class Client {
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
 	 */
-	public Response receiveResponse() throws IllegalArgumentException, IllegalAccessException, IOException, InstantiationException, ClassNotFoundException {
+	public Response receiveResponse() 
+			throws IllegalArgumentException, IllegalAccessException, IOException, 
+			InstantiationException, ClassNotFoundException {
 		byte[] buf = new byte[10000];
 		DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 		socket.receive(receivePacket);
@@ -125,13 +168,14 @@ public class Client {
 	}
 	
 	/**
-	 * 
+	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * In case of an error, the error message is displayed.
 	 * @param response
 	 */
 	public void processGetFacilitiesResponse(Response response) {
 		
 		if (response.getIsError() == 1) {
-			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
+			System.out.println("An error occured. Server message: " + ((ErrorData)response.getData()).getErrorType());
 		} 
 		else {
 			GetFacilitiesResponse facilitiesResponse = (GetFacilitiesResponse) response.getData();
@@ -147,19 +191,23 @@ public class Client {
 	}
 	
 	/**
-	 * 
+	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * In case of an error, the error message is displayed.
 	 * @param response
 	 */
 	public void processQueryFacilityResponse(Response response) {
 		
 		if (response.getIsError() == 1) {
-			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
+			System.out.println("An error occured. Server message: " + ((ErrorData)response.getData()).getErrorType());
 		}
 		else {
 			QueryFacilityResponse queryResponse = (QueryFacilityResponse) response.getData();
 			List<Booking> bookings = queryResponse.getBookings();
-			
+			List<Facility> freeFacilities = new ArrayList<Facility>();
 			//Display all bookings
+			for (int i=0; i<bookings.size(); i++){
+				
+			}
 			System.out.println("Booking ID|  User ID  |   Facility ID  |   From  |    To    ");
 			System.out.println("------------------------------------------------------------");
 			for(int i = 0; i<bookings.size(); i++)
@@ -168,13 +216,14 @@ public class Client {
 	}
 	
 	/**
-	 * 
+	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * In case of an error, the error message is displayed.
 	 * @param response
 	 */
 	public void processBookFacilityResponse(Response response) {
 		
 		if (response.getIsError() == 1) {
-			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
+			System.out.println("An error occured. Server message: " + ((ErrorData)response.getData()).getErrorType());
 		}
 		else {
 			BookFacilityResponse queryResponse = (BookFacilityResponse) response.getData();
@@ -184,13 +233,14 @@ public class Client {
 	}
 	
 	/**
-	 * 
+	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * In case of an error, the error message is displayed.
 	 * @param response
 	 */
 	public void processChangeBookingResponse(Response response) {
 		
 		if (response.getIsError() == 1) {
-			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
+			System.out.println("An error occured. Server message: " + ((ErrorData)response.getData()).getErrorType());
 		}
 		else {
 			ChangeBookingResponse changeResponse = (ChangeBookingResponse) response.getData();
@@ -200,13 +250,14 @@ public class Client {
 	}
 	
 	/**
-	 * 
+	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * In case of an error, the error message is displayed.
 	 * @param response
 	 */
 	public void processTransferBookingResponse(Response response) {
 		
 		if (response.getIsError() == 1) {
-			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
+			System.out.println("An error occured. Server message: " + ((ErrorData)response.getData()).getErrorType());
 		}
 		else {
 			TransferBookingResponse transferResponse = (TransferBookingResponse) response.getData();
@@ -216,13 +267,14 @@ public class Client {
 	}
 	
 	/**
-	 * 
+	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * In case of an error, the error message is displayed.
 	 * @param response
 	 */
 	public void processModifyDurationResponse(Response response) {
 		
 		if (response.getIsError() == 1) {
-			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
+			System.out.println("An error occured. Server message: " + ((ErrorData)response.getData()).getErrorType());
 		}
 		else {
 			ModifyDurationResponse modifyResponse = (ModifyDurationResponse) response.getData();
@@ -231,10 +283,15 @@ public class Client {
 		}
 	}
 
+	/**
+	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * In case of an error, the error message is displayed.
+	 * @param response
+	 */
 	public void processCallbackResponse(Response response, Timestamp end, int monitorInterval) throws IllegalArgumentException, IllegalAccessException, InstantiationException, ClassNotFoundException, IOException {
 
 		if (response.getIsError() == 1) {
-			System.out.println("An error occured. " + ((ErrorData)response.getData()).getErrorType());
+			System.out.println("An error occured. Server message: " + ((ErrorData)response.getData()).getErrorType());
 		}
 		else {
 			CallbackResponse monitorResponse = (CallbackResponse) response.getData();
@@ -245,6 +302,11 @@ public class Client {
 		
 	}
 
+	/**
+	 * Retrieves the response data for the GetFacilitiesRequest from the response object, and displays it to the user.
+	 * In case of an error, the error message is displayed.
+	 * @param response
+	 */
 	private void processCallbackUpdateResponse(Timestamp end, int monitorInterval) 
 			throws IllegalArgumentException, IllegalAccessException, InstantiationException, 
 			ClassNotFoundException, IOException {
@@ -275,6 +337,5 @@ public class Client {
 			} 
 		}
 		System.out.println("Exiting monitor mode! \n");
-		
 	}
 }
